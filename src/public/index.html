@@ -5841,6 +5841,12 @@
 	// 	}, 200);
 	// }
 
+	function updateSidebarTabsUI() {
+		document.querySelectorAll('.sidebar-tab-btn').forEach(btn => {
+			btn.classList.toggle('active', btn.dataset.tabName === appState.baseMode);
+		});
+	}
+
 	function initializeCollapsibleSidebars() {
 		const sections = ['tags-section-wrapper', 'timeline-section-wrapper'];
 
