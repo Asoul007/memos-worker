@@ -1381,12 +1381,25 @@ async function handleGetAllAttachments(request, env) {
                 UNION ALL
 
                 SELECT
+                    n.id AS noteId, n.updated_at AS timestamp, 'video' AS type,
+                    ('/api/files/' || n.id || '/' || json_extract(json_each.value, '$.id')) AS url,
+                    json_extract(json_each.value, '$.name') AS name,
+                    json_extract(json_each.value, '$.size') AS size,
+                    json_extract(json_each.value, '$.id') AS id
+                FROM notes n, json_each(COALESCE(n.files,'[]')) AS json_each
+                WHERE json_valid(n.files) AND json_array_length(n.files) > 0
+                    AND json_extract(json_each.value, '$.type') LIKE 'video/%'
+
+                UNION ALL
+
+                SELECT
                     n.id AS noteId, n.updated_at AS timestamp, 'file' AS type,
                     NULL AS url, json_extract(json_each.value, '$.name') AS name,
                     json_extract(json_each.value, '$.size') AS size,
                     json_extract(json_each.value, '$.id') AS id
                 FROM notes n, json_each(COALESCE(n.files,'[]')) AS json_each
                 WHERE json_valid(n.files) AND json_array_length(n.files) > 0
+                    AND (json_extract(json_each.value, '$.type') IS NULL OR json_extract(json_each.value, '$.type') NOT LIKE 'video/%')
             )
             SELECT * FROM combined_attachments
             ORDER BY timestamp DESC

@@ -5347,8 +5347,8 @@ function toggleLang() {
 
 			try {
 							if (!fileId) {
-								const parentLink = shareBtn.closest('.attachment-item');
-								const urlToCopy = parentLink ? parentLink.href : '';
+								const parentItem = shareBtn.closest('.attachment-item');
+								const urlToCopy = parentItem ? (parentItem.dataset.url || parentItem.href || '') : '';
 								if (urlToCopy) {
 									await navigator.clipboard.writeText(urlToCopy);
 									shareBtn.innerHTML = successIcon;
@@ -5360,11 +5360,14 @@ function toggleLang() {
 										shareBtn.title = 'Get public link';
 										shareBtn.disabled = false;
 									}, 2000);
+								} else {
+									shareBtn.disabled = false;
+									shareBtn.innerHTML = originalIcon;
 								}
-							} else {
-								const response = await fetch(`/api/notes/${noteId}/files/${fileId}/share`, { method: 'POST' });
+								return;
 							}
-				if (!response.ok) {
+							const response = await fetch(`/api/notes/${noteId}/files/${fileId}/share`, { method: 'POST' });
+							if (!response.ok) {
 					const errorData = await response.json();
 					throw new Error(errorData.error || 'Failed to generate link.');
 				}
@@ -7385,7 +7388,23 @@ function toggleLang() {
 		fileInput.multiple = true;
 		fileInput.onchange = async () => {
 			for (const file of fileInput.files) {
-				await handlePastedImage(file, noteInput);
+				const phId = `uploading-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+				const phDiv = document.createElement('div');
+				phDiv.className = 'file-tag-item';
+				phDiv.id = phId;
+				phDiv.textContent = `${file.name} (${t('Uploading image...')})`;
+				fileListDisplay.appendChild(phDiv);
+				try {
+					const finalUrl = await uploadToLocalWorker(file);
+					_pendingImageMarkdowns.push(`![${file.name}](${finalUrl})`);
+					const imgPrev = document.createElement('div');
+					imgPrev.className = 'file-tag-item pending-image-preview';
+					imgPrev.innerHTML = `<img src="${finalUrl}" style="height:60px;width:auto;border-radius:4px;vertical-align:middle;margin-right:8px;"><span>${file.name}</span><button type="button" class="remove-file-main-btn">&times;</button>`;
+					phDiv.replaceWith(imgPrev);
+				} catch (error) {
+					phDiv.textContent = `${file.name} (${t('Upload failed')})`;
+					console.error('Image upload failed:', error);
+				}
 			}
 		};
 		fileInput.click();
