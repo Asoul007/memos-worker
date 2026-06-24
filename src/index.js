@@ -716,7 +716,7 @@ async function handleNoteDetail(request, noteId, env) {
 					await stmt.bind(isFavorited, id).run();
 				}
 				if (formData.has('is_archived')) {
-					const isArchived = formData.get('is_archived') === '1' ? 1 : 0;
+					const isArchived = formData.get('is_archived') === 'true' ? 1 : 0;
 					const stmt = db.prepare("UPDATE notes SET is_archived = ? WHERE id = ?");
 					await stmt.bind(isArchived, id).run();
 				}
