@@ -476,6 +476,8 @@
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: 1rem;
+	position: relative;
+	position: relative;
   }
 
   .app-header h1 {
@@ -2003,7 +2005,13 @@
   }
 
   #header-title {
-	margin-top: 0;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	white-space: nowrap;
+	font-family: '楷体', 'KaiTi', serif;
+	font-size: 2rem;
   }
 
   .icon-btn.favorited {
@@ -5324,11 +5332,11 @@ function toggleLang() {
 	attachmentsContent.addEventListener('click', async e => {
 		const imageLink = e.target.closest('a[data-previewable="true"]');
 		const videoContainer = e.target.closest('div[data-video-previewable="true"]');
-		if (imageLink) {
+		if (imageLink && !e.target.closest('.share-file-btn,.delete-file-btn')) {
 			e.preventDefault();
 			const imgElement = imageLink.querySelector('img');
 			openImagePreview(imgElement.src, imgElement.alt);
-		} else if (videoContainer) {
+		} else if (videoContainer && !e.target.closest('.share-file-btn,.delete-file-btn')) {
 			const videoUrl = videoContainer.dataset.url;
 			const noteId = videoContainer.dataset.noteId;
 			openVideoPreview(videoUrl, `Video from note ${noteId}`);
@@ -5356,6 +5364,8 @@ function toggleLang() {
 									shareBtn.innerHTML = successIcon;
 									shareBtn.classList.add('copied');
 									shareBtn.title = 'Copied!';
+									showToast(t('Copied!'), 'success');
+									showToast(t('Copied!'), 'success');
 									setTimeout(() => {
 										shareBtn.innerHTML = originalIcon;
 										shareBtn.classList.remove('copied');
@@ -5380,6 +5390,8 @@ function toggleLang() {
 				shareBtn.innerHTML = successIcon;
 				shareBtn.classList.add('copied');
 				shareBtn.title = 'Copied!';
+				showToast(t('Copied!'), 'success');
+				showToast(t('Copied!'), 'success');
 
 				setTimeout(() => {
 					shareBtn.innerHTML = originalIcon;
