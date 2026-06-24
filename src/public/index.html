@@ -3278,10 +3278,10 @@
 				<header class="attachments-header">
 					<h3 data-i18n="Files">Files</h3>
 					<div class="attachments-tabs">
-						<button class="tab-btn active" data-filter="all">✨ All</button>
-						<button class="tab-btn" data-filter="image">🏞️ Images</button>
-						<button class="tab-btn" data-filter="video">🎬 Videos</button>
-						<button class="tab-btn" data-filter="file">📄 Files</button>
+						<button class="tab-btn active" data-filter="all" data-i18n="✨ All">✨ All</button>
+						<button class="tab-btn" data-filter="image" data-i18n="🏞️ Images">🏞️ Images</button>
+						<button class="tab-btn" data-filter="video" data-i18n="🎬 Videos">🎬 Videos</button>
+						<button class="tab-btn" data-filter="file" data-i18n="📄 Files">📄 Files</button>
 					</div>
 				</header>
 				<div id="attachments-content" class="loading-state">
@@ -4272,6 +4272,7 @@ const LANG = {
     "No tags yet": "暂无标签",
     "Loading...": "加载中...",
     "❒ All": "❒ 全部",
+	    "✨ All": "✨ 全部",
     "🏞️ Images": "🏞️ 图片",
     "🎬 Videos": "🎬 视频",
     "📄 Files": "📄 文件",
@@ -5233,7 +5234,7 @@ function toggleLang() {
 			const itemLink = document.createElement('a');
 			itemLink.dataset.noteId = item.noteId;
 			let shareButtonHTML = '', deleteButtonHTML = '';
-			if (item.type === 'file' && item.id) {
+			if (item.id) {
 				shareButtonHTML = `
                 <button class="share-file-btn icon-btn" title="Get public link" data-note-id="${item.noteId}" data-file-id="${item.id}">
                     <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
@@ -5249,7 +5250,11 @@ function toggleLang() {
 				itemLink.href = item.url;
 				itemLink.className = 'attachment-item attachment-item-image';
 				itemLink.dataset.previewable = true;
-				itemLink.innerHTML = `<img src="${item.url}" loading="lazy" class="preview" alt="Image from note ${item.noteId}">`;
+					itemLink.innerHTML = `
+					<img src="${item.url}" loading="lazy" class="preview" alt="Image from note ${item.noteId}">
+					${shareButtonHTML}
+					${deleteButtonHTML}
+					`;
 				gridEl.appendChild(itemLink);
 			} else if (item.type === 'video') {
 				const itemContainer = document.createElement('div');
@@ -5261,7 +5266,9 @@ function toggleLang() {
 				itemContainer.innerHTML = `
         <video src="${item.url}" class="preview" preload="metadata" muted style="object-fit: contain; background: #000; pointer-events: none;"></video>
         <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; color: rgba(255,255,255,0.7); pointer-events: none;">▶</div>
-    `;
+										${shareButtonHTML}
+										${deleteButtonHTML}
+					`;
 				gridEl.appendChild(itemContainer);
 			} else { // type === 'file'
 				itemLink.href = `/api/files/${item.noteId}/${item.id}`;
