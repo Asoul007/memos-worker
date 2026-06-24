@@ -5197,7 +5197,7 @@ function toggleLang() {
 		});
 
 		if (isInitialLoad && filteredData.length === 0 && !attachmentsState.hasMore) {
-			attachmentsContent.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No items to display.</p>';
+			attachmentsContent.innerHTML = `<p style="text-align: center; color: var(--text-secondary);">${t('No items to display.')}</p>`;
 			return;
 		}
 
