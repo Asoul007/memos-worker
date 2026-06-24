@@ -5069,14 +5069,6 @@
 	});
 
 	// --- 为附件页面的子选项卡添加事件委托 ---
-	attachmentsTabs.addEventListener('click', (e) => {
-		const tabBtn = e.target.closest('.tab-btn');
-		if (!tabBtn || tabBtn.classList.contains('active')) return;
-		attachmentsTabs.querySelector('.active').classList.remove('active');
-		tabBtn.classList.add('active');
-		attachmentsState.currentFilter = tabBtn.dataset.filter;
-		renderAttachments();
-	});
 
 	async function handleImageUploadAndInsert(files, textarea) {
 		if (!files || files.length === 0) return;
@@ -7280,6 +7272,7 @@
 			}
 		} catch (error) {
 			currentLoader.textContent = `Failed to load: ${error.message}`;
+			notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 2rem 0;">Failed to load: ${error.message}</div>`;
 		} finally {
 			appState.pagination.isLoading = false;
 			refreshLoader.style.display = 'none';
@@ -7442,10 +7435,14 @@
 		const fragment = document.createDocumentFragment();
 		if (!settings.enableDateGrouping || appState.isWaterfall) {
 			notes.forEach(note => {
-				const noteElement = createNoteElement(note);
-				fragment.appendChild(noteElement);
-				if (appState.isWaterfall) {
-					waterfallObserver.observe(noteElement);
+				try {
+					const noteElement = createNoteElement(note);
+					fragment.appendChild(noteElement);
+					if (appState.isWaterfall) {
+						waterfallObserver.observe(noteElement);
+					}
+				} catch (e) {
+					console.error('Failed to render note', note.id, e);
 				}
 			});
 		} else {
@@ -7465,8 +7462,12 @@
 
 				// 循环渲染所有置顶笔记
 				pinnedNotes.forEach(note => {
-					const noteElement = createNoteElement(note);
-					pinnedContainer.appendChild(noteElement);
+					try {
+						const noteElement = createNoteElement(note);
+						pinnedContainer.appendChild(noteElement);
+					} catch (e) {
+						console.error('Failed to render pinned note', note.id, e);
+					}
 				});
 
 				// 将整个置顶区域添加到主文档片段中
@@ -7513,8 +7514,12 @@
 				contentEl.className = 'date-group-content';
 
 				dateNotes.forEach(note => {
-					const noteElement = createNoteElement(note);
-					contentEl.appendChild(noteElement);
+					try {
+						const noteElement = createNoteElement(note);
+						contentEl.appendChild(noteElement);
+					} catch (e) {
+						console.error('Failed to render dated note', note.id, e);
+					}
 				});
 
 				groupEl.appendChild(headerEl);
