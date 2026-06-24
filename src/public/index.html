@@ -4926,7 +4926,8 @@ function toggleLang() {
 					actionButton.title = newFavoriteState ? t('Unfavorite') : t('Favorite');
 					const noteInCache = allNotesCache.find(n => n.id === parseInt(noteId));
 					if (noteInCache) noteInCache.is_favorited = newFavoriteState;
-					await refreshNotes();
+					_pendingImageMarkdowns = [];
+				await refreshNotes();
 					if (appState.baseMode === 'favorites' && !newFavoriteState && noteElement) {
 						noteElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
 						noteElement.style.opacity = '0';
@@ -4953,7 +4954,8 @@ function toggleLang() {
 					actionButton.title = newPinState ? t('Unpin') : t('Pin');
 					const noteInCache = allNotesCache.find(n => n.id === parseInt(noteId));
 					if (noteInCache) noteInCache.is_pinned = newPinState;
-					await refreshNotes();
+					_pendingImageMarkdowns = [];
+				await refreshNotes();
 				} catch (error) {
 					showCustomAlert(error.message, 'error');
 				} finally {
@@ -6779,7 +6781,8 @@ function toggleLang() {
 					noteForm.reset(); // 使用 reset() 可以同時清空文本和文件輸入
 					updateMainFileDisplay(); // 更新主界面的文件列表顯示
 					closeFullscreenEditor();
-					await refreshNotes();
+					_pendingImageMarkdowns = [];
+				await refreshNotes();
 
 				} catch (error) {
 					showCustomAlert(error.message, 'error');
@@ -6820,7 +6823,8 @@ function toggleLang() {
 					if (!res.ok) throw new Error(`Update failed: ${await res.text()}`);
 
 					closeFullscreenEditor();
-					await refreshNotes(); // 刷新列表以显示最新内容
+					_pendingImageMarkdowns = [];
+				await refreshNotes(); // 刷新列表以显示最新内容
 				} catch (error) {
 					showCustomAlert(error.message, 'error');
 				} finally {
@@ -8006,9 +8010,28 @@ function toggleLang() {
 		});
 	};
 	noteFile.addEventListener('change', async () => {
-		// 1. 上传图片并插入 Markdown
-		await handleImageUploadAndInsert(noteFile.files, noteInput);
-		// 2. 更新附件列表（只显示非图片文件）
+		// 上传图片作为附件
+		const imageFiles2 = Array.from(noteFile.files).filter(f => f.type.startsWith('image/'));
+		for (const file of imageFiles2) {
+			const phId = `uploading-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+			const phDiv = document.createElement('div');
+			phDiv.className = 'file-tag-item';
+			phDiv.id = phId;
+			phDiv.textContent = `${file.name} (${t('Uploading image...')})`;
+			fileListDisplay.appendChild(phDiv);
+			try {
+				const finalUrl = await uploadToLocalWorker(file);
+				_pendingImageMarkdowns.push(`![${file.name}](${finalUrl})`);
+				const imgPrev = document.createElement('div');
+				imgPrev.className = 'file-tag-item pending-image-preview';
+				imgPrev.innerHTML = `<img src="${finalUrl}" style="height:60px;width:auto;border-radius:4px;vertical-align:middle;margin-right:8px;"><span>${file.name}</span><button type="button" class="remove-file-main-btn">&times;</button>`;
+				phDiv.replaceWith(imgPrev);
+			} catch (error) {
+				phDiv.textContent = `${file.name} (${t('Upload failed')})`;
+				console.error('Image upload failed:', error);
+			}
+		}
+		// 更新附件列表
 		updateMainFileDisplay();
 	});
 
@@ -8016,6 +8039,16 @@ function toggleLang() {
 		// 仅当点击的是移除按钮时执行
 		if (e.target.classList.contains('remove-file-main-btn')) {
 			const fileTag = e.target.closest('.file-tag-item');
+			// 处理待上传的图片预览移除
+			if (fileTag.classList.contains('pending-image-preview')) {
+				const mdToRemove = fileTag.dataset.markdown;
+				if (mdToRemove) {
+					const idx = _pendingImageMarkdowns.indexOf(mdToRemove);
+					if (idx !== -1) _pendingImageMarkdowns.splice(idx, 1);
+				}
+				fileTag.remove();
+				return;
+			}
 			const fileNameToRemove = fileTag.dataset.filename;
 
 			// FileList 是不可变的，需要用 DataTransfer 来创建一个新的 FileList
@@ -8043,8 +8076,26 @@ function toggleLang() {
 	noteForm.addEventListener('drop', async e => {
 		noteForm.classList.remove('dragover');
 		if (e.dataTransfer.files.length > 0) {
-			await handleImageUploadAndInsert(e.dataTransfer.files, noteInput);
-
+			const droppedImageFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+			for (const file of droppedImageFiles) {
+				const phId = `uploading-${Date.now()}-${Math.random().toString(36).slice(2,6)}`;
+				const phDiv = document.createElement('div');
+				phDiv.className = 'file-tag-item';
+				phDiv.id = phId;
+				phDiv.textContent = `${file.name} (${t('Uploading image...')})`;
+				fileListDisplay.appendChild(phDiv);
+				try {
+					const finalUrl = await uploadToLocalWorker(file);
+					_pendingImageMarkdowns.push(`![${file.name}](${finalUrl})`);
+					const imgPrev = document.createElement('div');
+					imgPrev.className = 'file-tag-item pending-image-preview';
+					imgPrev.innerHTML = `<img src="${finalUrl}" style="height:60px;width:auto;border-radius:4px;vertical-align:middle;margin-right:8px;"><span>${file.name}</span><button type="button" class="remove-file-main-btn">&times;</button>`;
+					phDiv.replaceWith(imgPrev);
+				} catch (error) {
+					phDiv.textContent = `${file.name} (${t('Upload failed')})`;
+					console.error(error);
+				}
+			}
 			noteFile.files = e.dataTransfer.files;
 			updateMainFileDisplay();
 		}
@@ -8267,7 +8318,12 @@ function toggleLang() {
 		btn.textContent = t('Saving...');
 
 		const formData = new FormData();
-		formData.append('content', noteInput.value);
+		const imgMarkdown = _pendingImageMarkdowns.length > 0 ? '
+
+' + _pendingImageMarkdowns.join('
+
+') : '';
+		formData.append('content', noteInput.value + imgMarkdown);
 		Array.from(noteFile.files).forEach(file => {
 			if (!file.type.startsWith('image/')) {
 				formData.append('file', file);
@@ -8516,6 +8572,7 @@ function toggleLang() {
 			try {
 				const res = await fetch(`/api/notes/${noteId}`, { method: 'PUT', body: formData });
 				if (!res.ok) throw new Error('Failed to unpin note.');
+				_pendingImageMarkdowns = [];
 				await refreshNotes();
 			} catch (error) {
 				showCustomAlert(error.message, 'error');
@@ -8532,6 +8589,7 @@ function toggleLang() {
 			try {
 				const res = await fetch(`/api/notes/${noteId}`, { method: 'PUT', body: formData });
 				if (!res.ok) throw new Error('Failed to unfavorite.');
+				_pendingImageMarkdowns = [];
 				await refreshNotes();
 			} catch (error) {
 				showCustomAlert(error.message, 'error');
@@ -8548,6 +8606,7 @@ function toggleLang() {
 			try {
 				const res = await fetch(`/api/notes/${noteId}`, { method: 'PUT', body: formData });
 				if (!res.ok) throw new Error('Failed to unarchive.');
+				_pendingImageMarkdowns = [];
 				await refreshNotes();
 			} catch (error) {
 				showCustomAlert(error.message, 'error');
@@ -8660,7 +8719,14 @@ function toggleLang() {
 			saveEditBtn.innerHTML = '...';
 
 			const formData = new FormData();
-			formData.append('content', noteElement.querySelector('.edit-textarea').value.trim());
+			const editContent = noteElement.querySelector('.edit-textarea').value.trim();
+			const pendingMd = noteElement._pendingImages && noteElement._pendingImages.length > 0 ? '
+
+' + noteElement._pendingImages.join('
+
+') : '';
+			formData.append('content', editContent + pendingMd);
+			delete noteElement._pendingImages;
 
 			const timestampToggle = noteElement.querySelector('.update-timestamp-toggle');
 			const shouldUpdate = !timestampToggle.checked;
@@ -8770,8 +8836,26 @@ function toggleLang() {
 		if (e.target.matches('.edit-file-input')) {
 			const noteElement = e.target.closest('.note');
 			const textarea = noteElement.querySelector('.edit-textarea');
-			await handleImageUploadAndInsert(e.target.files, textarea);
-			// 旧的附件逻辑现在只处理非图片文件
+			// 上传图片作为附件
+			const imgFiles = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+			const filesContainer = noteElement.querySelector('.edit-files-container');
+			if (!noteElement._pendingImages) noteElement._pendingImages = [];
+			for (const file of imgFiles) {
+				const phDiv = document.createElement('div');
+				phDiv.className = 'edit-file-tag';
+				phDiv.textContent = `${file.name} (${t('Uploading image...')})`;
+				filesContainer.appendChild(phDiv);
+				try {
+					const finalUrl = await uploadToLocalWorker(file);
+					const md = `![${file.name}](${finalUrl})`;
+					noteElement._pendingImages.push(md);
+					phDiv.innerHTML = `<img src="${finalUrl}" style="height:40px;width:auto;border-radius:4px;vertical-align:middle;margin-right:8px;"><span>${file.name}</span><button class="remove-file-tag-btn" type="button">&times;</button>`;
+				} catch (error) {
+					phDiv.textContent = `${file.name} (${t('Upload failed')})`;
+					console.error(error);
+				}
+			}
+			// 非图片文件
 			addFilesToEditNote(e.target.files, noteElement);
 			e.target.value = '';
 		}
@@ -8787,9 +8871,25 @@ function toggleLang() {
 			else if (eventName === 'dragleave') textarea.classList.remove('dragover');
 			else if (eventName === 'drop') {
 				textarea.classList.remove('dragover');
-				await handleImageUploadAndInsert(e.dataTransfer.files, textarea.closest('.note').querySelector('.edit-textarea'));
-
-				addFilesToEditNote(e.dataTransfer.files, textarea.closest('.note'));
+				const noteEl = textarea.closest('.note');
+				const imgFiles = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+				const filesContainer = noteEl.querySelector('.edit-files-container');
+				if (!noteEl._pendingImages) noteEl._pendingImages = [];
+				for (const file of imgFiles) {
+					const phDiv = document.createElement('div');
+					phDiv.className = 'edit-file-tag';
+					phDiv.textContent = `${file.name} (${t('Uploading image...')})`;
+					filesContainer.appendChild(phDiv);
+					try {
+						const finalUrl = await uploadToLocalWorker(file);
+						noteEl._pendingImages.push(`![${file.name}](${finalUrl})`);
+						phDiv.innerHTML = `<img src="${finalUrl}" style="height:40px;width:auto;border-radius:4px;vertical-align:middle;margin-right:8px;"><span>${file.name}</span><button class="remove-file-tag-btn" type="button">&times;</button>`;
+					} catch (error) {
+						phDiv.textContent = `${file.name} (${t('Upload failed')})`;
+						console.error(error);
+					}
+				}
+				addFilesToEditNote(e.dataTransfer.files, noteEl);
 			}
 		});
 	});
