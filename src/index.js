@@ -237,7 +237,7 @@ async function handleTimelineRequest(request, env) {
 		// 在 JavaScript 中进行分组统计
 		const timeline = {};
 		for (const note of results) {
-			const rawTs = note.updated_at;
+			const rawTs = String(note.updated_at).replace(/\.0+$/, "");
 			let date;
 			// 兼容数字毫秒时间戳 / 标准字符串时间
 			if (/^\d+$/.test(rawTs)) {
