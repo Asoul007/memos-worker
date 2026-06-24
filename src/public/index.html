@@ -7685,6 +7685,7 @@ function toggleLang() {
 			});
 			allNotesCache.push(...data.notes);
 			renderNotes(data.notes);
+			applyLanguage();
 			appState.pagination.hasMore = data.hasMore;
 			appState.pagination.currentPage = page;
 
