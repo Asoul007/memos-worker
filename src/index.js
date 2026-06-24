@@ -195,10 +195,23 @@ async function handleStatsRequest(request, env) {
 		]);
 
 		// 组装最终的 JSON 响应
+		let oldestTs = null;
+		if (oldestNoteResult.oldest_ts !== null && oldestNoteResult.oldest_ts !== undefined) {
+			const raw = oldestNoteResult.oldest_ts;
+			if (/^\d+$/.test(raw)) {
+				// 数字毫秒时间戳转东八区标准时间字符串
+				oldestTs = new Date(Number(raw) + 8 * 3600 * 1000)
+					.toISOString()
+					.replace('T',' ')
+					.slice(0,19);
+			} else {
+				oldestTs = raw;
+			}
+		}
 		const stats = {
 			memos: memosResult.total || 0,
 			tags: tagsResult.total || 0,
-			oldestNoteTimestamp: oldestNoteResult.oldest_ts || null
+			oldestNoteTimestamp: oldestTs
 		};
 		return jsonResponse(stats);
 	} catch (e) {
