@@ -6948,7 +6948,7 @@ function toggleLang() {
 	});
 	function formatTimestamp(timestamp) {
 		if (!timestamp) return { relative: '', absolute: '' };
-		const ts = String(timestamp).replace(/\.0+$/, '');
+		const ts = Number(String(timestamp).replace(/\.0+$/, ''));
 		const date = new Date(ts);
 		const year = date.getFullYear();
 		const month = (date.getMonth() + 1).toString().padStart(2, '0');
