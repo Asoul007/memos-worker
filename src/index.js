@@ -582,7 +582,7 @@ async function handleNotesList(request, env) {
 
 				// 【核心修改】在插入数据库前，先提取图片 URL
 				const picUrls = extractImageUrls(content);
-					const videoUrls = [];
+				const videoUrls = [];
 
 				// 【核心修改】在 INSERT 语句中加入新的 pics 字段
 				const insertStmt = db.prepare(
@@ -692,6 +692,7 @@ async function handleNoteDetail(request, noteId, env) {
 					}
 					// 处理新附件上传
 					const newFiles = formData.getAll('file');
+					const videoUrls = [];
 					for (const file of newFiles) {
 						if (file.name && file.size > 0 && !file.type.startsWith('image/')) {
 							const fileId = crypto.randomUUID();
@@ -706,7 +707,6 @@ async function handleNoteDetail(request, noteId, env) {
 
 					// 在更新数据库前，提取新的图片 URL 列表
 					const picUrls = extractImageUrls(content);
-					const videoUrls = [];
 					const newTimestamp = shouldUpdateTimestamp ? Date.now() : existingNote.updated_at;
 					// 在 UPDATE 语句中加入 pics 字段的更新
 					const stmt = db.prepare(
