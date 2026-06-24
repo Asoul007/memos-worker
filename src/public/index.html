@@ -4553,8 +4553,9 @@ function toggleLang() {
   currentLang = currentLang === 'zh' ? 'en' : 'zh';
   localStorage.setItem('app-lang', currentLang);
   applyLanguage();
-  // Re-translate dynamic UI elements that contain text
-  document.querySelectorAll('.timeline-count, .stat-value, .tag-count').forEach(el => {});
+  loadAndRenderTimeline();
+  reRenderCachedNotes();
+  applyTheme(document.body.dataset.theme || 'light');
 }
 
 	async function saveSettings() {
@@ -6947,7 +6948,8 @@ function toggleLang() {
 	});
 	function formatTimestamp(timestamp) {
 		if (!timestamp) return { relative: '', absolute: '' };
-		const date = new Date(timestamp);
+		const ts = String(timestamp).replace(/\.0+$/, '');
+		const date = new Date(ts);
 		const year = date.getFullYear();
 		const month = (date.getMonth() + 1).toString().padStart(2, '0');
 		const day = date.getDate().toString().padStart(2, '0');
