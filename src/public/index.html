@@ -4740,7 +4740,7 @@ function toggleLang() {
 		const selectedValue = expirationSelect.value;
 
 		if (selectedValue === 'revoke') {
-			const confirmed = await showCustomConfirm('Are you sure you want to revoke the public links immediately? This action cannot be undone.');
+			const confirmed = await showCustomConfirm(t('Are you sure you want to revoke the public links immediately? This action cannot be undone.'));
 			if (confirmed) {
 				expirationStatus.textContent = 'Revoking...';
 				expirationSelect.disabled = true;
@@ -5035,7 +5035,7 @@ function toggleLang() {
 			}
 			case 'delete': {
 				if (!noteElement) return;
-				const confirmed = await showCustomConfirm('Are you sure you want to delete this note?');
+				const confirmed = await showCustomConfirm(t('Are you sure you want to delete this note?'));
 				if (!confirmed) return;
 				waterfallObserver.unobserve(noteElement);
 				try {
@@ -5404,7 +5404,7 @@ function toggleLang() {
 			const fileId = deleteBtn.dataset.fileId;
 			if (!fileId) return;
 
-			const confirmed = await showCustomConfirm('Are you sure you want to permanently delete this file? This action cannot be undone.');
+			const confirmed = await showCustomConfirm(t('Are you sure you want to permanently delete this file? This action cannot be undone.'));
 			if (!confirmed) return;
 
 			const attachmentItem = deleteBtn.closest('.attachment-item');
@@ -5437,14 +5437,14 @@ function toggleLang() {
 					attachmentsContent.querySelectorAll(`.attachment-item a[data-note-id="${noteId}"]`).forEach(el => el.closest('.attachment-item').remove());
 					attachmentsState.allData = attachmentsState.allData.filter(item => item.noteId != noteId);
 					allNotesCache = allNotesCache.filter(n => n.id !== parseInt(noteId));
-					showToast('File and empty note removed.', 'info');
+					showToast(t('File and empty note removed.'), 'info');
 				} else {
 					attachmentItem.remove();
 					attachmentsState.allData = attachmentsState.allData.filter(item => !(item.noteId == noteId && item.id == fileId));
 					if (originalNote) {
 						originalNote.files = originalNote.files.filter(f => f.id !== fileId);
 					}
-					showToast('File deleted successfully.');
+					showToast(t('File deleted successfully.'));
 				}
 
 			} catch (error) {
@@ -6232,7 +6232,7 @@ function toggleLang() {
 
 			case 'delete': {
 				if (!noteElement) return;
-				const confirmed = await showCustomConfirm('Are you sure you want to delete this note?');
+				const confirmed = await showCustomConfirm(t('Are you sure you want to delete this note?'));
 				if (!confirmed) return;
 
 				// 复用现有的删除逻辑
@@ -8522,7 +8522,7 @@ function toggleLang() {
 			const fileId = deleteBtn.dataset.fileId;
 			if (!fileId) return;
 
-			const confirmed = await showCustomConfirm('Are you sure you want to permanently delete this file? This action cannot be undone.');
+			const confirmed = await showCustomConfirm(t('Are you sure you want to permanently delete this file? This action cannot be undone.'));
 			if (!confirmed) return;
 
 			const attachmentElement = deleteBtn.closest('.attachment-link, .attachment-img');
@@ -8552,13 +8552,13 @@ function toggleLang() {
 				if (result.noteDeleted) {
 					noteElement.remove(); // 直接删除DOM元素
 					allNotesCache = allNotesCache.filter(n => n.id !== parseInt(noteId));
-					showToast('File and empty note removed.', 'info');
+					showToast(t('File and empty note removed.'), 'info');
 				} else {
 					attachmentElement.remove();
 					if (currentNote) {
 						currentNote.files = currentNote.files.filter(f => f.id !== fileId);
 					}
-					showToast('File deleted successfully.');
+					showToast(t('File deleted successfully.'));
 				}
 
 			} catch (error) {
