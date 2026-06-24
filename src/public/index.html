@@ -7754,14 +7754,14 @@ function toggleLang() {
 				</button>
 		` : '';
 		const favoritedIconHTML = note.is_favorited ? `
-					<button class='icon-btn favorited fav-toggle-btn' title='Favorite' data-i18n='Favorite' data-i18n-type='title' style='color:var(--primary-color)'>
+					<button class='icon-btn favorited fav-toggle-btn' title='${t("Unfavorite")}' style='color:var(--primary-color)'>
 							<svg xmlns='http://www.w3.org/2000/svg' height='24px' viewBox='0 0 24 24' width='24px' fill='currentColor'>
 									<path d='M12 17.27l4.15 2.51c.76.46 1.69-.22 1.49-1.08l-1.1-4.72 3.67-3.18c.67-.58.31-1.68-.57-1.75l-4.83-.41-1.89-4.46c-.34-.81-1.5-.81-1.84 0L9.19 8.63l-4.83.41c-.88.07-1.24 1.17-.57 1.75l3.67 3.18-1.1 4.72c-.2.86.73 1.54 1.49 1.08l4.15-2.51z' />
 							</svg>
 					</button>
 		` : '';
 		const archivedIconHTML = note.is_archived ? `
-					<button class='icon-btn archived-toggle-btn' title='Archive' data-i18n='Archive' data-i18n-type='title' style='color:var(--primary-color)'>
+					<button class='icon-btn archived-toggle-btn' title='${t("Unarchive")}' style='color:var(--primary-color)'>
 							<svg xmlns='http://www.w3.org/2000/svg' height='24px' viewBox='0 0 24 24' width='24px' fill='currentColor'><path d='M0 0h24v24H0V0z' fill='none'/><path d='M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L8 13.5l1.41-1.41L11 13.67V10h2v3.67l1.59-1.58L16 13.5l-4 4zM5.12 5l.83-1h12.1l.83 1H5.12z'/></svg>
 					</button>
 		` : '';
