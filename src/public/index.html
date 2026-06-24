@@ -4768,7 +4768,7 @@
 			attachmentsState.currentPage++;
 		} catch (error) {
 			console.error(error);
-			attachmentsContent.innerHTML = '<p>Failed to load attachments.</p>';
+			attachmentsContent.innerHTML = `<p>Failed to load attachments: ${error.message}</p>`;
 		} finally {
 			attachmentsState.isLoading = false;
 			const existingLoader = attachmentsContent.querySelector('.loading-indicator');
