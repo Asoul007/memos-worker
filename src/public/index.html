@@ -8374,6 +8374,7 @@ function toggleLang() {
 			mainPreviewToggleBtn.classList.remove('active');
 			autoResizeTextarea(noteInput);
 			updateMainFileDisplay();
+			_pendingImageMarkdowns = [];
 			await refreshNotes();
 		} catch (error) {
 			showCustomAlert(error.message, 'error');
