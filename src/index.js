@@ -1528,7 +1528,7 @@ async function handleDocsNodeCreate(request, env) {
 		}
 
 		const newNode = {
-			id: crypto.randomUUID(),
+			id: Date.now(),
 			type,
 			title,
 			content: type === 'file' ? `# ${title}` : null,
