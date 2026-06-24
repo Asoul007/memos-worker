@@ -8517,7 +8517,7 @@ function toggleLang() {
 			const formData = new FormData();
 			formData.append('isFavorited', 'false');
 			try {
-				const res = await fetch(\`/api/notes/\${noteId}\`, { method: 'PUT', body: formData });
+				const res = await fetch(`/api/notes/${noteId}`, { method: 'PUT', body: formData });
 				if (!res.ok) throw new Error('Failed to unfavorite.');
 				await refreshNotes();
 			} catch (error) {
@@ -8533,7 +8533,7 @@ function toggleLang() {
 			const formData = new FormData();
 			formData.append('is_archived', 'false');
 			try {
-				const res = await fetch(\`/api/notes/\${noteId}\`, { method: 'PUT', body: formData });
+				const res = await fetch(`/api/notes/${noteId}`, { method: 'PUT', body: formData });
 				if (!res.ok) throw new Error('Failed to unarchive.');
 				await refreshNotes();
 			} catch (error) {
