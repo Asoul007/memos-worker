@@ -4267,6 +4267,7 @@ const LANG = {
     "The older note will be merged into the newer one and then deleted.": "旧笔记将合并到新笔记中，然后被删除。",
     "Merge failed.": "合并失败。",
     "Notes merged successfully!": "笔记合并成功！",
+    "Filter by tag:": "筛选标签：",
     "No tags found": "未找到标签",
     "No tags yet": "暂无标签",
     "Loading...": "加载中...",
@@ -4450,6 +4451,7 @@ const LANG = {
     "The older note will be merged into the newer one and then deleted.": "The older note will be merged into the newer one and then deleted.",
     "Merge failed.": "Merge failed.",
     "Notes merged successfully!": "Notes merged successfully!",
+    "Filter by tag:": "Filter by tag:",
     "No tags found": "No tags found",
     "No tags yet": "No tags yet",
     "Loading...": "Loading...",
@@ -8945,7 +8947,7 @@ function toggleLang() {
 			tags.forEach(tag => {
 				const tagLi = document.createElement('li');
 				tagLi.innerHTML = `
-                    <div class='tag-item' data-tag-name='${tag.name}' title='Filter by tag: #${tag.name}'>
+                    <div class='tag-item' data-tag-name='${tag.name}' title='${t('Filter by tag:')} #${tag.name}'>
                         <span class='tag-label'>
                             <span class='tag-hash'>#</span>
                             <span class='tag-name'>${tag.name}</span>
