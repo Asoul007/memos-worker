@@ -15,7 +15,3 @@ id = "74002875f0ca4ce7aee26d94d1518f38"
 binding = "NOTES_R2_BUCKET"
 bucket_name = "notes-r2"
 
-[[vars]]
-USERNAME = "ADMIN"
-PASSWORD = "123456"
-
