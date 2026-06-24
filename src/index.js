@@ -1481,7 +1481,8 @@ async function handleDocsNodeUpdate(request, nodeId, env) {
  */
 async function handleDocsNodeCreate(request, env) {
 	try {
-		const { type, title, parent_id = null } = await request.json();
+		// 修复：默认值改为 "0" 而非 null
+		const { type, title, parent_id = "0" } = await request.json();
 		if (!type || !title || !['file', 'folder'].includes(type)) {
 			return jsonResponse({ error: 'Invalid input' }, 400);
 		}
@@ -1491,7 +1492,7 @@ async function handleDocsNodeCreate(request, env) {
 			type,
 			title,
 			content: type === 'file' ? `# ${title}` : null,
-			parent_id,
+			parent_id, // 现在不会是 null，根节点统一 "0"
 			created_at: Date.now(),
 			updated_at: Date.now(),
 		};
