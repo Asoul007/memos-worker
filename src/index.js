@@ -676,6 +676,23 @@ async function handleNoteDetail(request, noteId, env) {
 						currentFiles = currentFiles.filter(file => !filesToDelete.includes(file.id));
 					}
 
+					// 处理从 pics 中删除图片（独立上传的图片，非文件附件）
+					const picsToRemove = JSON.parse(formData.get('picsToRemove') || '[]');
+					if (picsToRemove.length > 0) {
+						const r2ImageKeys = picsToRemove.map(url => {
+							const m = url.match(/^\/api\/images\/([a-zA-Z0-9-]+)$/);
+							return m ? `uploads/${m[1]}` : null;
+						}).filter(Boolean);
+						if (r2ImageKeys.length > 0) {
+							await env.NOTES_R2_BUCKET.delete(r2ImageKeys);
+						}
+						// 从 content 中移除对应的 markdown 图片引用
+						for (const url of picsToRemove) {
+							const escaped = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+							content = content.replace(new RegExp(`!\[.*?\]\(\s*${escaped}\s*\)`, 'g'), '');
+						}
+					}
+
 					// 在处理完文件删除后，检查笔记是否应该被删除
 					const hasNewFiles = formData.getAll('file').some(f => f.name && f.size > 0);
 					if (content.trim() === '' && currentFiles.length === 0 && !hasNewFiles) {
