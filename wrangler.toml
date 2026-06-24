@@ -14,3 +14,10 @@ id = "74002875f0ca4ce7aee26d94d1518f38"
 [[r2_buckets]]
 binding = "NOTES_R2_BUCKET"
 bucket_name = "notes-r2"
+
+[
+vars
+]
+USERNAME = "admin"
+PASSWORD = "123456"
+
