@@ -4525,6 +4525,12 @@
 					actionButton.title = newFavoriteState ? 'Unfavorite' : 'Favorite';
 					const noteInCache = allNotesCache.find(n => n.id === parseInt(noteId));
 					if (noteInCache) noteInCache.is_favorited = newFavoriteState;
+					if (appState.baseMode === 'favorites' && !newFavoriteState && noteElement) {
+						noteElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+						noteElement.style.opacity = '0';
+						noteElement.style.transform = 'scale(0.95)';
+						setTimeout(() => noteElement.remove(), 300);
+					}
 				} catch (error) {
 					showCustomAlert(error.message, 'error');
 				} finally {
@@ -5155,6 +5161,11 @@
 				const data = await response.json();
 				// 显示应用主界面
 				showAppScreen();
+				data.notes.forEach(note => {
+					note.is_favorited = note.is_favorited === '1' || note.is_favorited === 1 || note.is_favorited === '1.0';
+					note.is_archived = note.is_archived === '1' || note.is_archived === 1 || note.is_archived === '1.0';
+					note.is_pinned = note.is_pinned === '1' || note.is_pinned === 1;
+				});
 				allNotesCache = data.notes;
 				renderNotes(data.notes);
 				appState.pagination.hasMore = data.hasMore;
@@ -7259,6 +7270,11 @@
 				allNotesCache = [];
 				notesContainer.innerHTML = '';
 			}
+			data.notes.forEach(note => {
+				note.is_favorited = note.is_favorited === '1' || note.is_favorited === 1 || note.is_favorited === '1.0';
+				note.is_archived = note.is_archived === '1' || note.is_archived === 1 || note.is_archived === '1.0';
+				note.is_pinned = note.is_pinned === '1' || note.is_pinned === 1;
+			});
 			allNotesCache.push(...data.notes);
 			renderNotes(data.notes);
 			appState.pagination.hasMore = data.hasMore;
