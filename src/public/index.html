@@ -7350,13 +7350,16 @@ function toggleLang() {
 
 	// --- Event Handlers ---
 	insertImageBtn.addEventListener('click', () => {
-		const url = prompt('请输入图片链接 (URL):', 'https://');
-
-		// 检查用户是否输入了链接 (没有取消或留空)
-		if (url && url.trim() !== 'https://' && url.trim() !== '') {
-			const markdownImage = `![](${url})`;
-			insertTextAtCursor(noteInput, markdownImage);
-		}
+		const fileInput = document.createElement('input');
+		fileInput.type = 'file';
+		fileInput.accept = 'image/jpeg,image/png,image/gif,image/webp,image/bmp,image/svg+xml';
+		fileInput.multiple = true;
+		fileInput.onchange = async () => {
+			for (const file of fileInput.files) {
+				await handlePastedImage(file, noteInput);
+			}
+		};
+		fileInput.click();
 	});
 
 	/**
