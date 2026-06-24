@@ -664,7 +664,7 @@ async function handleNoteDetail(request, noteId, env) {
 				const shouldUpdateTimestamp = formData.get('update_timestamp') !== 'false';
 
 				if (formData.has('content')) {
-					const content = formData.get('content')?.toString() ?? existingNote.content;
+					let content = formData.get('content')?.toString() ?? existingNote.content;
 					let currentFiles = existingNote.files;
 
 					// --- 现在的文件处理只关心非图片附件 ---
