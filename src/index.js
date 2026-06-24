@@ -187,27 +187,25 @@ async function handleStatsRequest(request, env) {
 		const tagsCountQuery = db.prepare("SELECT COUNT(DISTINCT tag_id) as total FROM note_tags");
 		const oldestNoteQuery = db.prepare("SELECT MIN(updated_at) as oldest_ts FROM notes");
 
-		// 使用 Promise.all 并行执行所有查询，以获得最佳性能
 		const [memosResult, tagsResult, oldestNoteResult] = await Promise.all([
 			memosCountQuery.first(),
 			tagsCountQuery.first(),
 			oldestNoteQuery.first()
 		]);
 
-		// 组装最终的 JSON 响应
+		// 核心修复：统一转换时间格式，只输出标准时间字符串
 		let oldestTs = null;
-		if (oldestNoteResult.oldest_ts !== null && oldestNoteResult.oldest_ts !== undefined) {
-			const raw = oldestNoteResult.oldest_ts;
-			if (/^\d+$/.test(raw)) {
-				// 数字毫秒时间戳转东八区标准时间字符串
-				oldestTs = new Date(Number(raw) + 8 * 3600 * 1000)
-					.toISOString()
-					.replace('T',' ')
-					.slice(0,19);
+		const rawTs = oldestNoteResult.oldest_ts;
+		if (rawTs !== null) {
+			if (/^\d+$/.test(String(rawTs))) {
+				// 数字毫秒 → 东八区标准时间字符串
+				const sec = Number(rawTs) / 1000;
+				oldestTs = db.exec(`SELECT datetime(${sec}, 'unixepoch', '+08:00')`).results[0].values[0];
 			} else {
-				oldestTs = raw;
+				oldestTs = rawTs;
 			}
 		}
+
 		const stats = {
 			memos: memosResult.total || 0,
 			tags: tagsResult.total || 0,
