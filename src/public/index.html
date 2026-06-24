@@ -4925,6 +4925,7 @@ function toggleLang() {
 					actionButton.title = newFavoriteState ? t('Unfavorite') : t('Favorite');
 					const noteInCache = allNotesCache.find(n => n.id === parseInt(noteId));
 					if (noteInCache) noteInCache.is_favorited = newFavoriteState;
+					await refreshNotes();
 					if (appState.baseMode === 'favorites' && !newFavoriteState && noteElement) {
 						noteElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
 						noteElement.style.opacity = '0';
@@ -7743,7 +7744,7 @@ function toggleLang() {
 		// 	editedIndicatorHtml = ` ·&nbsp;<span class="note-edited-indicator" title="Edited at: ${editedTime.absolute}">edited</span>`;
 		// }
 		const pinnedIconHTML = note.is_pinned ? `
-				<button class='unpin-btn icon-btn pinned' title='Unpin' data-i18n='Unpin' data-i18n-type='title'>
+				<button class='unpin-btn icon-btn pinned' title='${t("Unpin")}'>
 						<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' stroke-width='2' stroke='currentColor' fill='currentColor' stroke-linecap='round' stroke-linejoin='round'>
 								<path stroke='none' d='M0 0h24v24H0z' fill='none'></path>
 								<path d='M9 4v6l-2 4v2h10v-2l-2 -4v-6'></path>
@@ -7760,7 +7761,7 @@ function toggleLang() {
 					</button>
 		` : '';
 		const archivedIconHTML = note.is_archived ? `
-					<button class='icon-btn archived-toggle-btn' title='Archive' data-i18n='Archive' data-i18n-type='title' style='color:var(--text-muted)'>
+					<button class='icon-btn archived-toggle-btn' title='Archive' data-i18n='Archive' data-i18n-type='title' style='color:var(--primary-color)'>
 							<svg xmlns='http://www.w3.org/2000/svg' height='24px' viewBox='0 0 24 24' width='24px' fill='currentColor'><path d='M0 0h24v24H0V0z' fill='none'/><path d='M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L8 13.5l1.41-1.41L11 13.67V10h2v3.67l1.59-1.58L16 13.5l-4 4zM5.12 5l.83-1h12.1l.83 1H5.12z'/></svg>
 					</button>
 		` : '';
@@ -7971,6 +7972,7 @@ function toggleLang() {
 		notesContainer.innerHTML = '';
 		noteCounter = 1;
 		renderNotes(allNotesCache);
+		applyLanguage();
 	}
 
 	// --- Main Form and File Handling ---
