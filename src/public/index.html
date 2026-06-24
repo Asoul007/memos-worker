@@ -3575,7 +3575,7 @@
 				<h4 data-i18n='Background'>Background</h4>
 				<div class='setting-item'>
 					<label for='bg-image-url' data-i18n='Image URL'>Image URL</label>
-					<input type='text' id='bg-image-url' placeholder='Enter image URL...'>
+					<input type='text' id='bg-image-url' placeholder='Enter image URL...' data-i18n='Enter image URL...' data-i18n-type='placeholder'>
 				</div>
 				<div class='setting-item'>
 					<label for='bg-image-upload' data-i18n='Or Upload'>Or Upload</label>
@@ -3592,8 +3592,8 @@
 				<div class='setting-item'>
 					<label></label>
 					<div class='setting-buttons-group'>
-						<button id='restore-bg-btn' class='btn btn-secondary btn-sm'>Restore</button>
-						<button id='clear-bg-btn' class='btn btn-secondary btn-sm'>Clear</button>
+						<button id='restore-bg-btn' class='btn btn-secondary btn-sm' data-i18n='Restore'>Restore</button>
+						<button id='clear-bg-btn' class='btn btn-secondary btn-sm' data-i18n='Clear'>Clear</button>
 					</div>
 				</div>
 			</div>
@@ -3619,7 +3619,7 @@
 				<div class='setting-item'>
 					<label></label>
 					<div class='setting-buttons-group'>
-						<button id='restore-surface-defaults-btn' class='btn btn-secondary btn-sm'>Restore Defaults</button>
+						<button id='restore-surface-defaults-btn' class='btn btn-secondary btn-sm' data-i18n='Restore Defaults'>Restore Defaults</button>
 					</div>
 				</div>
 			</div>
@@ -3630,25 +3630,25 @@
 					<div class='setting-item'>
 						<label for='upload-dest-local'>
 							<input type='radio' id='upload-dest-local' name='upload-destination' value='local' checked>
-							Local (via Worker & R2)
+							<span data-i18n='Local (via Worker & R2)'>Local (via Worker & R2)</span>
 						</label>
 					</div>
 					<div class='setting-item'>
 						<label for='upload-dest-imgur'>
 							<input type='radio' id='upload-dest-imgur' name='upload-destination' value='imgur'>
-							Imgur (Requires Client ID)
+							<span data-i18n='Imgur (Requires Client ID)'>Imgur (Requires Client ID)</span>
 						</label>
 					</div>
 				</div>
 				<div class='setting-item' id='imgur-client-id-wrapper' style='display: flex;'>
 					<label for='imgur-client-id' data-i18n='Imgur Client ID'>Imgur Client ID</label>
-					<input type='text' id='imgur-client-id' placeholder='Enter your Imgur Client ID...'>
+					<input type='text' id='imgur-client-id' placeholder='Enter your Imgur Client ID...' data-i18n='Enter your Imgur Client ID...' data-i18n-type='placeholder'>
 				</div>
 			</div>
 			<div class='setting-group'>
 				<h4 data-i18n='Telegram Proxy'>Telegram Proxy</h4>
 				<div class='setting-item'>
-					<label for='toggle-telegram-proxy'>Enable Video&File Proxy</label>
+					<label for='toggle-telegram-proxy' data-i18n='Enable Video&File Proxy'>Enable Video&File Proxy</label>
 					<input type='checkbox' id='toggle-telegram-proxy' class='toggle-switch'>
 				</div>
 			</div>
@@ -3656,11 +3656,11 @@
 			<div class='setting-group'>
 				<h4 data-i18n='Waterfall Mode'>Waterfall Mode</h4>
 				<div class='setting-item'>
-					<label for='toggle-editor-in-waterfall'>Hide Editor in Waterfall Mode</label>
+					<label for='toggle-editor-in-waterfall' data-i18n='Hide Editor in Waterfall Mode'>Hide Editor in Waterfall Mode</label>
 					<input type='checkbox' id='toggle-editor-in-waterfall' class='toggle-switch'>
 				</div>
 				<div class='setting-item'>
-					<label for='waterfall-width-slider'>Card Width (px)</label>
+					<label for='waterfall-width-slider' data-i18n='Card Width (px)'>Card Width (px)</label>
 					<input type='range' id='waterfall-width-slider' min='200' max='600' step='10' value='320'>
 					<span id='waterfall-width-value'>320px</span>
 				</div>
@@ -3676,7 +3676,7 @@
 				d='M12 6.5c3.79 0 7.17 2.13 8.82 5.5-1.65 3.37-5.02 5.5-8.82 5.5S4.83 15.37 3.18 12C4.83 8.63 8.21 6.5 12 6.5m0-2C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5C21.27 7.61 17 4.5 12 4.5zm0 5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5m0-2c-2.48 0-4.5 2.02-4.5 4.5s2.02 4.5 4.5 4.5 4.5-2.02 4.5-4.5-2.02-4.5-4.5-4.5z' />
 		</svg>
 	</button>
-	<button class='icon-btn btn-danger' data-action='delete' title='Delete Note'>
+	<button class='icon-btn btn-danger' data-action='delete' title='Delete Note' data-i18n='Delete Note' data-i18n-type='title'>
 		<svg xmlns='http://www.w3.org/2000/svg' height='24px' viewBox='0 0 24 24' width='24px' fill='currentColor'>
 			<path d='M0 0h24v24H0V0z' fill='none' />
 			<path d='M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-3.5l-1-1zM18 7H6v12c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7z' />
@@ -4341,6 +4341,8 @@ const LANG = {
     "Switch language": "切换语言",
     "Previous month": "上个月",
     "Next month": "下个月",
+    "Light Mode": "浅色模式",
+    "Dark Mode": "深色模式",
     "No headings found.": "未找到标题。",
   },
   en: {
@@ -4519,6 +4521,8 @@ const LANG = {
     "Toggle Split View": "Toggle Split View",
     "Back to top": "Back to top",
     "Switch language": "Switch language",
+    "Light Mode": "Light Mode",
+    "Dark Mode": "Dark Mode",
     "No headings found.": "No headings found.",
   }
 };
@@ -5558,6 +5562,7 @@ function toggleLang() {
 				});
 				allNotesCache = data.notes;
 				renderNotes(data.notes);
+				applyLanguage();
 				appState.pagination.hasMore = data.hasMore;
 				appState.pagination.currentPage = 1;
 
@@ -7788,10 +7793,10 @@ function toggleLang() {
 									</div>
 											<div class='note-actions view-mode'>
 													${pinnedIconHTML}
-													<button class='edit icon-btn' title='Edit'>
+													<button class='edit icon-btn' title='Edit' data-i18n='Edit' data-i18n-type='title'>
 															<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'><path d='M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z'></path></svg>
 													</button>
-													<button class='more-actions-btn icon-btn' title='More actions'>
+													<button class='more-actions-btn icon-btn' title='More actions' data-i18n='More options' data-i18n-type='title'>
 															 <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
 													</button>
 											</div>
