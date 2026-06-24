@@ -8336,11 +8336,7 @@ function toggleLang() {
 		btn.textContent = t('Saving...');
 
 		const formData = new FormData();
-		const imgMarkdown = _pendingImageMarkdowns.length > 0 ? '
-
-' + _pendingImageMarkdowns.join('
-
-') : '';
+		const imgMarkdown = _pendingImageMarkdowns.length > 0 ? '\n\n' + _pendingImageMarkdowns.join('\n\n') : '';
 		formData.append('content', noteInput.value + imgMarkdown);
 		Array.from(noteFile.files).forEach(file => {
 			if (!file.type.startsWith('image/')) {
@@ -8739,11 +8735,7 @@ function toggleLang() {
 
 			const formData = new FormData();
 			const editContent = noteElement.querySelector('.edit-textarea').value.trim();
-			const pendingMd = noteElement._pendingImages && noteElement._pendingImages.length > 0 ? '
-
-' + noteElement._pendingImages.join('
-
-') : '';
+			const pendingMd = noteElement._pendingImages && noteElement._pendingImages.length > 0 ? '\n\n' + noteElement._pendingImages.join('\n\n') : '';
 			formData.append('content', editContent + pendingMd);
 			delete noteElement._pendingImages;
 
