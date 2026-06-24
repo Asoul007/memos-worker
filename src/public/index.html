@@ -4794,8 +4794,13 @@
 			return;
 		}
 
+		const safeDate = (ts) => {
+			const d = new Date(ts);
+			return isNaN(d.getTime()) ? new Date() : d;
+		};
+
 		const groupedByMonth = attachmentsState.allData.reduce((acc, item) => {
-			const date = new Date(item.timestamp);
+			const date = safeDate(item.timestamp);
 			const monthKey = date.toLocaleString('en-US', { year: 'numeric', month: 'long' });
 			if (!acc[monthKey]) acc[monthKey] = [];
 			acc[monthKey].push(item);
@@ -4815,7 +4820,7 @@
 
 		// 只将新获取的数据项添加到对应的网格中
 		filteredData.forEach(item => {
-			const date = new Date(item.timestamp);
+			const date = safeDate(item.timestamp);
 			const monthKey = date.toLocaleString('en-US', { year: 'numeric', month: 'long' });
 			const gridEl = document.getElementById(`month-${monthKey.replace(/\s/g, '-')}`).querySelector('.attachments-grid');
 			const itemLink = document.createElement('a');
