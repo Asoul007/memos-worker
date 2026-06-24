@@ -1253,8 +1253,8 @@ async function processNoteTags(db, noteId, content) {
 			const tag = await db.prepare("SELECT id FROM tags WHERE name = ?").bind(tagName).first();
 			if (tag) {
 				statements.push(
-					db.prepare("INSERT OR IGNORE INTO note_tags (note_id, tag_id) VALUES (?, ?)")
-						.bind(noteId, tag.id)
+					db.prepare("INSERT OR IGNORE INTO note_tags (note_id, tag_id, tag_name) VALUES (?, ?, ?)")
+						.bind(noteId, tag.id, tagName)
 				);
 			}
 		}
