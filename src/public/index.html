@@ -5671,7 +5671,8 @@ function toggleLang() {
 		updateEditorVisibility();
 	});
 
-	wideModeToggleBtn.addEventListener('click', () => {
+	document.getElementById('lang-toggle-btn')?.addEventListener('click', toggleLang);
+		wideModeToggleBtn.addEventListener('click', () => {
 		appState.isWide = !appState.isWide;
 		localStorage.setItem('memos-wide-mode', appState.isWide);
 		applyViewModes();
