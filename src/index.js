@@ -1559,7 +1559,11 @@ async function handleDocsNodeDelete(request, nodeId, env) {
 async function handleDocsNodeMove(request, nodeId, env) {
 	const db = env.DB;
 	try {
-		const { new_parent_id } = await request.json();
+		let { new_parent_id } = await request.json();
+		// 修复：前端传 null 统一替换为 "0"
+		if (new_parent_id === null || new_parent_id === undefined) {
+			new_parent_id = "0";
+		}
 		const nodeToMove = await db.prepare("SELECT * FROM nodes WHERE id = ?").bind(nodeId).first();
 
 		// --- Validation ---
@@ -1573,10 +1577,10 @@ async function handleDocsNodeMove(request, nodeId, env) {
 			return jsonResponse({ success: true, message: "Node is already in the target location." }); // No-op
 		}
 
-		if (new_parent_id !== null) {
+		if (new_parent_id !== "0") {
 			const parentNode = await db.prepare("SELECT type FROM nodes WHERE id = ?").bind(new_parent_id).first();
 			if (!parentNode) {
-				return jsonResponse({ error: "Target destination does not exist." }, 404);
+				return jsonResponse({ error: "Target destination does not exist." }, 400);
 			}
 			if (parentNode.type !== 'folder') {
 				return jsonResponse({ error: "Target destination must be a folder." }, 400);
@@ -1584,16 +1588,12 @@ async function handleDocsNodeMove(request, nodeId, env) {
 		}
 
 		let currentParentId = new_parent_id;
-		while (currentParentId !== null) {
+		while (currentParentId !== "0") {
 			if (currentParentId === nodeId) {
 				return jsonResponse({ error: "Cannot move a folder into one of its own descendants." }, 400);
 			}
-			// CRITICAL FIX: Check if the parent exists before trying to read its properties
 			const parent = await db.prepare("SELECT parent_id FROM nodes WHERE id = ?").bind(currentParentId).first();
-			if (!parent) {
-				// This prevents a crash if the chain is broken
-				break;
-			}
+			if (!parent) break;
 			currentParentId = parent.parent_id;
 		}
 
