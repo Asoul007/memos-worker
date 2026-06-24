@@ -3847,7 +3847,7 @@
 
 			const grid = document.createElement('div');
 			grid.className = 'calendar-grid';
-			const dayNames = [7,1,2,3,4,5,6].map(d => new Date(2024,0,d).toLocaleDateString(currentLang === 'zh' ? 'zh-CN' : 'en-US', {weekday:'short'}));
+			const dayNames = [7,1,2,3,4,5,6].map(d => new Date(2024,0,d).toLocaleDateString(currentLang === 'zh' ? 'zh-CN' : 'en-US', {weekday: currentLang === 'zh' ? 'narrow' : 'short'}));
 			dayNames.forEach(name => {
 				const dayNameEl = document.createElement('div');
 				dayNameEl.className = 'calendar-day-name';
