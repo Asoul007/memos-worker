@@ -582,33 +582,40 @@ async function handleNotesList(request, env) {
 
 				// 【核心修改】在插入数据库前，先提取图片 URL
 				const picUrls = extractImageUrls(content);
+					const videoUrls = [];
 
 				// 【核心修改】在 INSERT 语句中加入新的 pics 字段
 				const insertStmt = db.prepare(
-					"INSERT INTO notes (content, files, is_pinned, created_at, updated_at, pics) VALUES (?, ?, 0, ?, ?, ?) RETURNING id"
+					"INSERT INTO notes (content, files, is_pinned, created_at, updated_at, pics, videos) VALUES (?, ?, 0, ?, ?, ?, ?) RETURNING id"
 				);
 				// 先用一个空的 files 数组插入
 				// 【核心修改】将提取出的 picUrls 绑定到 SQL 语句中
-				const { id: noteId } = await insertStmt.bind(content, "[]", now, now, picUrls).first();
+				const { id: noteId } = await insertStmt.bind(content, "[]", now, now, picUrls, "[]").first();
 				if (!noteId) {
 					throw new Error("Failed to create note and get ID.");
 				}
 
 				// --- 【重要逻辑调整】现在上传的文件，只有非图片类型才算作 "附件" (files) ---
 				for (const file of files) {
-					// 只有当文件存在，并且 MIME 类型不是图片时，才将其添加到 filesMeta
 					if (file.name && file.size > 0 && !file.type.startsWith('image/')) {
 						const fileId = crypto.randomUUID();
 						await env.NOTES_R2_BUCKET.put(`${noteId}/${fileId}`, file.stream());
-						filesMeta.push({ id: fileId, name: file.name, size: file.size, type: file.type });
+						if (file.type.startsWith('video/')) {
+							videoUrls.push(`/api/files/${noteId}/${fileId}`);
+						} else {
+							filesMeta.push({ id: fileId, name: file.name, size: file.size, type: file.type });
+						}
 					}
 				}
-
 				// 如果有非图片附件，再更新数据库中的 files 字段
 				if (filesMeta.length > 0) {
 					const updateFilesStmt = db.prepare("UPDATE notes SET files = ? WHERE id = ?");
 					await updateFilesStmt.bind(JSON.stringify(filesMeta), noteId).run();
 				}
+					if (videoUrls.length > 0) {
+						const updateVideosStmt = db.prepare("UPDATE notes SET videos = ? WHERE id = ?");
+						await updateVideosStmt.bind(JSON.stringify(videoUrls), noteId).run();
+					}
 
 				await processNoteTags(db, noteId, content);
 				// 获取完整的笔记返回给前端
@@ -686,22 +693,28 @@ async function handleNoteDetail(request, noteId, env) {
 					// 处理新附件上传
 					const newFiles = formData.getAll('file');
 					for (const file of newFiles) {
-						// 只有当文件存在，并且不是图片时，才作为附件处理
 						if (file.name && file.size > 0 && !file.type.startsWith('image/')) {
 							const fileId = crypto.randomUUID();
 							await env.NOTES_R2_BUCKET.put(`${id}/${fileId}`, file.stream());
-							currentFiles.push({ id: fileId, name: file.name, size: file.size, type: file.type });
+							if (file.type.startsWith('video/')) {
+								videoUrls.push(`/api/files/${id}/${fileId}`);
+							} else {
+								currentFiles.push({ id: fileId, name: file.name, size: file.size, type: file.type });
+							}
 						}
 					}
 
 					// 在更新数据库前，提取新的图片 URL 列表
 					const picUrls = extractImageUrls(content);
+					const videoUrls = [];
 					const newTimestamp = shouldUpdateTimestamp ? Date.now() : existingNote.updated_at;
 					// 在 UPDATE 语句中加入 pics 字段的更新
 					const stmt = db.prepare(
-						"UPDATE notes SET content = ?, files = ?, updated_at = ?, pics = ? WHERE id = ?"
+						"UPDATE notes SET content = ?, files = ?, updated_at = ?, pics = ?, videos = ? WHERE id = ?"
 					);
-					await stmt.bind(content, JSON.stringify(currentFiles), newTimestamp, picUrls, id).run();
+					const existingVideos = (() => { try { return JSON.parse(existingNote.videos || '[]'); } catch(e) { return []; } })();
+					const allVideos = [...existingVideos, ...videoUrls];
+					await stmt.bind(content, JSON.stringify(currentFiles), newTimestamp, picUrls, JSON.stringify(allVideos), id).run();
 					await processNoteTags(db, id, content);
 				}
 
