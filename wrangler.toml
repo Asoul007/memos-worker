@@ -13,7 +13,7 @@ database_id = "Yc02176c2-4295-4cff-a959-ef00b84d36ed"
 database_name = "notes-db"
 
 [[kv_namespaces]]
-binding = "notes-kv"
+binding = "NOTES_KV"
 id = "74002875f0ca4ce7aee26d94d1518f38"
 preview_id = ""
 
