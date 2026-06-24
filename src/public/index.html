@@ -4757,7 +4757,7 @@
 
 		try {
 			const response = await fetch(`/api/attachments?page=${attachmentsState.currentPage}`);
-			if (!response.ok) throw new Error('Failed to fetch attachments');
+			if (!response.ok) { const errBody = await response.json().catch(() => ({})); throw new Error(errBody.message || 'Failed to fetch attachments'); }
 			const data = await response.json();
 			// 追加新数据
 			attachmentsState.allData.push(...data.attachments);
@@ -5036,6 +5036,7 @@
 	homeTabBtn.addEventListener('click', () => {
 		if (appState.baseMode === 'home') return;
 		hideAttachmentsViewer(); // 从附件页返回
+		appState.filters = { query: '', tag: null, date: null };
 		appState.baseMode = 'home';
 		updateSidebarTabsUI();
 		updateEditorVisibility();
@@ -5045,6 +5046,7 @@
 	favoritesTabBtn.addEventListener('click', () => {
 		if (appState.baseMode === 'favorites') return;
 		hideAttachmentsViewer(); // 从附件页返回
+		appState.filters = { query: '', tag: null, date: null };
 		appState.baseMode = 'favorites';
 		updateSidebarTabsUI();
 		updateEditorVisibility();
@@ -5054,6 +5056,7 @@
 	archiveTabBtn.addEventListener('click', () => {
 		if (appState.baseMode === 'archive') return;
 		hideAttachmentsViewer();
+		appState.filters = { query: '', tag: null, date: null };
 		appState.baseMode = 'archive';
 		updateSidebarTabsUI();
 		updateEditorVisibility(); // 编辑器在归档页不显示
@@ -5838,34 +5841,6 @@
 	// 	}, 200);
 	// }
 
-	// --- 右侧栏Tab按钮的交互逻辑 ---
-	function updateSidebarTabsUI() {
-		document.querySelectorAll('.sidebar-tab-btn').forEach(btn => {
-			btn.classList.toggle('active', btn.dataset.tabName === appState.baseMode);
-		});
-	}
-
-	homeTabBtn.addEventListener('click', () => {
-		if (appState.baseMode === 'home') return;
-		appState.baseMode = 'home';
-		updateSidebarTabsUI();
-		updateEditorVisibility();
-		reloadNotes();
-	});
-
-	favoritesTabBtn.addEventListener('click', () => {
-		if (appState.baseMode === 'favorites') return;
-		appState.baseMode = 'favorites';
-		updateSidebarTabsUI();
-		updateEditorVisibility();
-		reloadNotes();
-	});
-
-
-	/**
-	 * 初始化侧边栏的折叠状态
-	 * 从 localStorage 读取用户的偏好并应用
-	 */
 	function initializeCollapsibleSidebars() {
 		const sections = ['tags-section-wrapper', 'timeline-section-wrapper'];
 

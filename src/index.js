@@ -716,7 +716,7 @@ async function handleNoteDetail(request, noteId, env) {
 					await stmt.bind(isFavorited, id).run();
 				}
 				if (formData.has('is_archived')) {
-					const isArchived = formData.get('is_archived') === 'true' ? 1 : 0;
+					const isArchived = formData.get('is_archived') === '1' ? 1 : 0;
 					const stmt = db.prepare("UPDATE notes SET is_archived = ? WHERE id = ?");
 					await stmt.bind(isArchived, id).run();
 				}
@@ -1354,7 +1354,7 @@ async function handleGetAllAttachments(request, env) {
                 SELECT
                     n.id AS noteId, n.updated_at AS timestamp, 'image' AS type,
                     json_each.value AS url, NULL AS name, NULL AS size, NULL AS id
-                FROM notes n, json_each(n.pics) AS json_each
+                FROM notes n, json_each(COALESCE(n.pics,'[]')) AS json_each
                 WHERE json_valid(n.pics) AND json_array_length(n.pics) > 0
 
                 UNION ALL
@@ -1362,7 +1362,7 @@ async function handleGetAllAttachments(request, env) {
                 SELECT
                     n.id AS noteId, n.updated_at AS timestamp, 'video' AS type,
                     json_each.value AS url, NULL AS name, NULL AS size, NULL AS id
-                FROM notes n, json_each(n.videos) AS json_each
+                FROM notes n, json_each(COALESCE(n.videos,'[]')) AS json_each
                 WHERE json_valid(n.videos) AND json_array_length(n.videos) > 0
 
                 UNION ALL
@@ -1372,7 +1372,7 @@ async function handleGetAllAttachments(request, env) {
                     NULL AS url, json_extract(json_each.value, '$.name') AS name,
                     json_extract(json_each.value, '$.size') AS size,
                     json_extract(json_each.value, '$.id') AS id
-                FROM notes n, json_each(n.files) AS json_each
+                FROM notes n, json_each(COALESCE(n.files,'[]')) AS json_each
                 WHERE json_valid(n.files) AND json_array_length(n.files) > 0
             )
             SELECT * FROM combined_attachments
@@ -1520,8 +1520,9 @@ async function handleDocsNodeUpdate(request, nodeId, env) {
  */
 async function handleDocsNodeCreate(request, env) {
 	try {
-		// 修复：默认值改为 "0" 而非 null
-		const { type, title, parent_id = "0" } = await request.json();
+		// 修复：前端可能传 null，统一转为 "0"
+		const { type, title, parent_id } = await request.json();
+		const safeParentId = parent_id ?? "0";
 		if (!type || !title || !['file', 'folder'].includes(type)) {
 			return jsonResponse({ error: 'Invalid input' }, 400);
 		}
@@ -1531,7 +1532,7 @@ async function handleDocsNodeCreate(request, env) {
 			type,
 			title,
 			content: type === 'file' ? `# ${title}` : null,
-			parent_id, // 现在不会是 null，根节点统一 "0"
+			parent_id: safeParentId,
 			created_at: Date.now(),
 			updated_at: Date.now(),
 		};
