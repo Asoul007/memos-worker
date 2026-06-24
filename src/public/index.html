@@ -4598,6 +4598,8 @@ function toggleLang() {
 	const noteInput = document.getElementById('note-input');
 	const noteFile = document.getElementById('note-file');
 	const fileListDisplay = document.getElementById('file-list-display');
+
+		let _pendingImageMarkdowns = [];
 	const notesContainer = document.getElementById('notes-container');
 	const refreshLoader = document.getElementById('refresh-loader');
 	const scrollLoader = document.getElementById('scroll-loader');
