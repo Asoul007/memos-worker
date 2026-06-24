@@ -653,7 +653,7 @@
 				},
 			});
 
-			new QuillMarkdown(editor);
+			try { new QuillMarkdown(editor); } catch (e) { console.warn('QuillMarkdown init failed:', e); }
 
 			editor.root.addEventListener('keydown', (event) => {
 				if (event.key !== 'Tab') return;
