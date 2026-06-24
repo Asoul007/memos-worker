@@ -5899,8 +5899,9 @@
 
 			// 计算天数
 			let days = 0;
-			if (stats.oldestNoteTimestamp) {
-				const oldestDate = new Date(stats.oldestNoteTimestamp);
+			if (stats.oldestNoteTimestamp != null) {
+				const oldestDate = new Date(Number(stats.oldestNoteTimestamp));
+				if (isNaN(oldestDate.getTime())) throw new Error('Invalid date from stats');
 				const today = new Date();
 				// 设置时间为当天的开始，避免时区和小时差异导致计算错误
 				oldestDate.setHours(0, 0, 0, 0);

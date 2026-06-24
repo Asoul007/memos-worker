@@ -193,17 +193,11 @@ async function handleStatsRequest(request, env) {
 			oldestNoteQuery.first()
 		]);
 
-		// 核心修复：统一转换时间格式，只输出标准时间字符串
+		// 直接返回原始毫秒时间戳（数字），前端自行解析，避免 D1 exec 返回值格式问题和时区解析歧义
 		let oldestTs = null;
 		const rawTs = oldestNoteResult.oldest_ts;
 		if (rawTs !== null) {
-			if (/^\d+$/.test(String(rawTs))) {
-				// 数字毫秒 → 东八区标准时间字符串
-				const sec = Number(rawTs) / 1000;
-				oldestTs = db.exec(`SELECT datetime(${sec}, 'unixepoch', '+08:00')`).results[0].values[0];
-			} else {
-				oldestTs = rawTs;
-			}
+			oldestTs = rawTs;
 		}
 
 		const stats = {
@@ -1481,14 +1475,39 @@ async function handleDocsNodeGet(request, nodeId, env) {
 }
 
 /**
- * PUT /api/docs/node/:id - 更新（保存）一个文档节点的内容
+ * 从 HTML 内容中提取第一个标题作为文档名称
+ */
+function extractTitleFromContent(content) {
+	if (!content) return null;
+	// 尝试匹配 HTML 中的 h1
+	const h1Match = content.match(/<h1[^>]*>(.*?)<\/h1>/i);
+	if (h1Match) {
+		return h1Match[1].replace(/<[^>]*>/g, '').trim();
+	}
+	// 尝试匹配 Markdown 标题
+	const mdMatch = content.match(/^#\s+(.+)/m);
+	if (mdMatch) {
+		return mdMatch[1].trim();
+	}
+	return null;
+}
+
+/**
+ * PUT /api/docs/node/:id - 更新（保存）一个文档节点的内容，同时自动同步标题
  */
 async function handleDocsNodeUpdate(request, nodeId, env) {
 	try {
 		const { content } = await request.json();
 		const now = Date.now();
-		const stmt = env.DB.prepare("UPDATE nodes SET content = ?, updated_at = ? WHERE id = ?");
-		await stmt.bind(content, now, nodeId).run();
+		// 从内容中提取标题，同步更新 title 字段
+		const title = extractTitleFromContent(content);
+		if (title) {
+			const stmt = env.DB.prepare("UPDATE nodes SET content = ?, title = ?, updated_at = ? WHERE id = ?");
+			await stmt.bind(content, title, now, nodeId).run();
+		} else {
+			const stmt = env.DB.prepare("UPDATE nodes SET content = ?, updated_at = ? WHERE id = ?");
+			await stmt.bind(content, now, nodeId).run();
+		}
 		return jsonResponse({ success: true, id: nodeId });
 	} catch (e) {
 		console.error(`Docs Update Node Error (id: ${nodeId}):`, e.message);

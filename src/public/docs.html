@@ -899,6 +899,10 @@
 			try {
 				await api.saveNode(activeNoteId, content);
 				saveBtn.innerHTML = '<i class=\'fas fa-check\'></i> Saved';
+				// 保存后刷新文件树，以便同步更新后的标题
+				await refreshFileTree();
+				// 重新高亮当前激活的文档
+				document.querySelector(`.tree-item[data-id="${activeNoteId}"]`)?.classList.add('active');
 			} catch (error) {
 				saveBtn.innerHTML = '<i class=\'fas fa-times\'></i> Error';
 				setTimeout(() => { saveBtn.disabled = false; saveBtn.innerHTML = '<i class=\'fas fa-save\'></i> Save'; }, 2000);
