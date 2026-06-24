@@ -307,7 +307,7 @@ async function handleSearchRequest(request, env) {
 		let bindings = [query + '*'];
 		let joinClause = "";
 		if (isFavoritesMode) {
-			whereClauses.push("n.is_favorited = 1");
+			whereClauses.push("n.is_favorited = '1'");
 		}
 		if (startTimestamp && endTimestamp) {
 			const startMs = parseInt(startTimestamp);
@@ -513,10 +513,10 @@ async function handleNotesList(request, env) {
 				let joinClause = "";
 
 				if (isArchivedMode) {
-					whereClauses.push("n.is_archived = 1");
+					whereClauses.push("n.is_archived = '1'");
 				} else {
 					// 默认（包括收藏夹）都应该排除已归档的
-					whereClauses.push("n.is_archived = 0");
+					whereClauses.push("n.is_archived = '0'");
 				}
 
 				if (startTimestamp && endTimestamp) {
@@ -538,7 +538,7 @@ async function handleNotesList(request, env) {
 					bindings.push(tagName);
 				}
 				if (isFavoritesMode) {
-					whereClauses.push("n.is_favorited = 1");
+					whereClauses.push("n.is_favorited = '1'");
 				}
 				const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(" AND ")}` : "";
 
@@ -706,17 +706,17 @@ async function handleNoteDetail(request, noteId, env) {
 				}
 
 				if (formData.has('isPinned')) { // --- 这是置顶状态的更新 ---
-					const isPinned = formData.get('isPinned') === 'true' ? 1 : 0;
+					const isPinned = formData.get('isPinned') === 'true' ? '1' : '0';
 					const stmt = db.prepare("UPDATE notes SET is_pinned = ? WHERE id = ?");
 					await stmt.bind(isPinned, id).run();
 				}
 				if (formData.has('isFavorited')) {
-					const isFavorited = formData.get('isFavorited') === 'true' ? 1 : 0;
+					const isFavorited = formData.get('isFavorited') === 'true' ? '1' : '0';
 					const stmt = db.prepare("UPDATE notes SET is_favorited = ? WHERE id = ?");
 					await stmt.bind(isFavorited, id).run();
 				}
 				if (formData.has('is_archived')) {
-					const isArchived = formData.get('is_archived') === 'true' ? 1 : 0;
+					const isArchived = formData.get('is_archived') === 'true' ? '1' : '0';
 					const stmt = db.prepare("UPDATE notes SET is_archived = ? WHERE id = ?");
 					await stmt.bind(isArchived, id).run();
 				}
