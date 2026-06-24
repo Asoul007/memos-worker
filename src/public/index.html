@@ -476,6 +476,7 @@
 	justify-content: space-between;
 	align-items: center;
 	margin-bottom: 1rem;
+	position: relative;
   }
 
   .app-header h1 {
@@ -2003,7 +2004,13 @@
   }
 
   #header-title {
-	margin-top: 0;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	margin: 0;
+	white-space: nowrap;
+	font-family: '楷体', 'KaiTi', serif;
+	font-size: 2rem;
   }
 
   .icon-btn.favorited {
@@ -5314,148 +5321,143 @@ function toggleLang() {
 	});
 
 	// --- 为附件内容区添加无限滚动和图片预览的事件委托 ---
-	attachmentsContent.addEventListener('scroll', () => {
-		// 无限滚动逻辑
-		if (attachmentsContent.scrollTop + attachmentsContent.clientHeight >= attachmentsContent.scrollHeight - 100) {
-			fetchAllAttachments();
-		}
-	});
+		attachmentsContent.addEventListener('click', async e => {
+			const shareBtn = e.target.closest('.share-file-btn');
+			if (shareBtn) {
+				e.preventDefault();
+				e.stopPropagation();
 
-	attachmentsContent.addEventListener('click', async e => {
-		const imageLink = e.target.closest('a[data-previewable="true"]');
-		const videoContainer = e.target.closest('div[data-video-previewable="true"]');
-		if (imageLink) {
-			e.preventDefault();
-			const imgElement = imageLink.querySelector('img');
-			openImagePreview(imgElement.src, imgElement.alt);
-		} else if (videoContainer) {
-			const videoUrl = videoContainer.dataset.url;
-			const noteId = videoContainer.dataset.noteId;
-			openVideoPreview(videoUrl, `Video from note ${noteId}`);
-		}
+				const noteId = shareBtn.dataset.noteId;
+				const fileId = shareBtn.dataset.fileId;
+				const originalIcon = shareBtn.innerHTML;
+				const successIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
 
-		const shareBtn = e.target.closest('.share-file-btn');
-		if (shareBtn) {
-			e.preventDefault();
-			e.stopPropagation();
+				shareBtn.disabled = true;
+				shareBtn.innerHTML = '...';
 
-			const noteId = shareBtn.dataset.noteId;
-			const fileId = shareBtn.dataset.fileId;
-			const originalIcon = shareBtn.innerHTML;
-			const successIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
-
-			shareBtn.disabled = true;
-			shareBtn.innerHTML = '...';
-
-			try {
-							if (!fileId) {
-								const parentItem = shareBtn.closest('.attachment-item');
-								const urlToCopy = parentItem ? (parentItem.dataset.url || parentItem.href || '') : '';
-								if (urlToCopy) {
-									await navigator.clipboard.writeText(urlToCopy);
-									shareBtn.innerHTML = successIcon;
-									shareBtn.classList.add('copied');
-									shareBtn.title = 'Copied!';
-									setTimeout(() => {
-										shareBtn.innerHTML = originalIcon;
-										shareBtn.classList.remove('copied');
-										shareBtn.title = 'Get public link';
-										shareBtn.disabled = false;
-									}, 2000);
-								} else {
-									shareBtn.disabled = false;
-									shareBtn.innerHTML = originalIcon;
-								}
-								return;
-							}
-							const response = await fetch(`/api/notes/${noteId}/files/${fileId}/share`, { method: 'POST' });
-							if (!response.ok) {
-					const errorData = await response.json();
-					throw new Error(errorData.error || 'Failed to generate link.');
-				}
-				const { url } = await response.json();
-
-				await navigator.clipboard.writeText(url);
-
-				shareBtn.innerHTML = successIcon;
-				shareBtn.classList.add('copied');
-				shareBtn.title = 'Copied!';
-
-				setTimeout(() => {
-					shareBtn.innerHTML = originalIcon;
-					shareBtn.classList.remove('copied');
-					shareBtn.title = 'Get public link';
-					shareBtn.disabled = false;
-				}, 2000);
-
-			} catch (error) {
-				showCustomAlert(`Error: ${error.message}`, 'error');
-				shareBtn.innerHTML = originalIcon;
-				shareBtn.disabled = false;
-			}
-		}
-
-		const deleteBtn = e.target.closest('.delete-file-btn');
-		if (deleteBtn) {
-			e.preventDefault();
-			e.stopPropagation();
-
-			const noteId = deleteBtn.dataset.noteId;
-			const fileId = deleteBtn.dataset.fileId;
-			if (!fileId) return;
-
-			const confirmed = await showCustomConfirm(t('Are you sure you want to permanently delete this file? This action cannot be undone.'));
-			if (!confirmed) return;
-
-			const attachmentItem = deleteBtn.closest('.attachment-item');
-			attachmentItem.style.opacity = '0.5';
-			deleteBtn.disabled = true;
-
-			const formData = new FormData();
-			formData.append('filesToDelete', JSON.stringify([fileId]));
-
-			// 找到对应的笔记内容来填充，以防内容为空
-			const originalNote = allNotesCache.find(n => n.id == noteId);
-			const content = originalNote ? originalNote.content : ''; // 如果在主列表缓存中能找到就用，否则为空
-			formData.append('content', content);
-			formData.append('update_timestamp', 'false');
-
-			try {
-				const response = await fetch(`/api/notes/${noteId}`, {
-					method: 'PUT',
-					body: formData
-				});
-
-				const result = await response.json();
-				if (!response.ok) {
-					const errorData = await response.json();
-					throw new Error(errorData.error || 'Failed to delete file.');
-				}
-
-				if (result.noteDeleted) {
-					// 从 Files 视图中移除所有属于该笔记的附件项
-					attachmentsContent.querySelectorAll(`.attachment-item a[data-note-id="${noteId}"]`).forEach(el => el.closest('.attachment-item').remove());
-					attachmentsState.allData = attachmentsState.allData.filter(item => item.noteId != noteId);
-					allNotesCache = allNotesCache.filter(n => n.id !== parseInt(noteId));
-					showToast(t('File and empty note removed.'), 'info');
-				} else {
-					attachmentItem.remove();
-					attachmentsState.allData = attachmentsState.allData.filter(item => !(item.noteId == noteId && item.id == fileId));
-					if (originalNote) {
-						originalNote.files = originalNote.files.filter(f => f.id !== fileId);
+				try {
+					if (!fileId) {
+						const parentItem = shareBtn.closest('.attachment-item');
+						const urlToCopy = parentItem ? (parentItem.dataset.url || parentItem.href || '') : '';
+						if (urlToCopy) {
+							await navigator.clipboard.writeText(urlToCopy);
+							shareBtn.innerHTML = successIcon;
+							shareBtn.classList.add('copied');
+							shareBtn.title = 'Copied!';
+							showToast(t('Copied!'), 'success');
+							setTimeout(() => {
+								shareBtn.innerHTML = originalIcon;
+								shareBtn.classList.remove('copied');
+								shareBtn.title = 'Get public link';
+								shareBtn.disabled = false;
+							}, 2000);
+						} else {
+							shareBtn.disabled = false;
+							shareBtn.innerHTML = originalIcon;
+						}
+						return;
 					}
-					showToast(t('File deleted successfully.'));
+					const response = await fetch(`/api/notes/${noteId}/files/${fileId}/share`, { method: 'POST' });
+					if (!response.ok) {
+						const errorData = await response.json();
+						throw new Error(errorData.error || 'Failed to generate link.');
+					}
+					const { url } = await response.json();
+
+					await navigator.clipboard.writeText(url);
+
+					shareBtn.innerHTML = successIcon;
+					shareBtn.classList.add('copied');
+					shareBtn.title = 'Copied!';
+					showToast(t('Copied!'), 'success');
+
+					setTimeout(() => {
+						shareBtn.innerHTML = originalIcon;
+						shareBtn.classList.remove('copied');
+						shareBtn.title = 'Get public link';
+						shareBtn.disabled = false;
+					}, 2000);
+
+				} catch (error) {
+					showCustomAlert(`Error: ${error.message}`, 'error');
+					shareBtn.innerHTML = originalIcon;
+					shareBtn.disabled = false;
 				}
-
-			} catch (error) {
-				showCustomAlert(`Error: ${error.message}`, 'error');
-				attachmentItem.style.opacity = '1';
-				deleteBtn.disabled = false;
+				return;
 			}
-		}
-	});
 
-	// 处理右键预览文本文件的事件
+			const deleteBtn = e.target.closest('.delete-file-btn');
+			if (deleteBtn) {
+				e.preventDefault();
+				e.stopPropagation();
+
+				const noteId = deleteBtn.dataset.noteId;
+				const fileId = deleteBtn.dataset.fileId;
+				if (!fileId) return;
+
+				const confirmed = await showCustomConfirm(t('Are you sure you want to permanently delete this file? This action cannot be undone.'));
+				if (!confirmed) return;
+
+				const attachmentItem = deleteBtn.closest('.attachment-item');
+				attachmentItem.style.opacity = '0.5';
+				deleteBtn.disabled = true;
+
+				const formData = new FormData();
+				formData.append('filesToDelete', JSON.stringify([fileId]));
+
+				// 找到对应的笔记内容来填充，以防内容为空
+				const originalNote = allNotesCache.find(n => n.id == noteId);
+				const content = originalNote ? originalNote.content : ''; // 如果在主列表缓存中能找到就用，否则为空
+				formData.append('content', content);
+				formData.append('update_timestamp', 'false');
+
+				try {
+					const response = await fetch(`/api/notes/${noteId}`, {
+						method: 'PUT',
+						body: formData
+					});
+
+					const result = await response.json();
+					if (!response.ok) {
+						const errorData = await response.json();
+						throw new Error(errorData.error || 'Failed to delete file.');
+					}
+
+					if (result.noteDeleted) {
+						// 从 Files 视图中移除所有属于该笔记的附件项
+						attachmentsContent.querySelectorAll(`.attachment-item a[data-note-id="${noteId}"]`).forEach(el => el.closest('.attachment-item').remove());
+						attachmentsState.allData = attachmentsState.allData.filter(item => item.noteId != noteId);
+						allNotesCache = allNotesCache.filter(n => n.id !== parseInt(noteId));
+						showToast(t('File and empty note removed.'), 'info');
+					} else {
+						attachmentItem.remove();
+						attachmentsState.allData = attachmentsState.allData.filter(item => !(item.noteId == noteId && item.id == fileId));
+						if (originalNote) {
+							originalNote.files = originalNote.files.filter(f => f.id !== fileId);
+						}
+						showToast(t('File deleted successfully.'));
+					}
+
+				} catch (error) {
+					showCustomAlert(`Error: ${error.message}`, 'error');
+					attachmentItem.style.opacity = '1';
+					deleteBtn.disabled = false;
+				}
+				return;
+			}
+
+			const imageLink = e.target.closest('a[data-previewable="true"]');
+			const videoContainer = e.target.closest('div[data-video-previewable="true"]');
+			if (imageLink) {
+				e.preventDefault();
+				const imgElement = imageLink.querySelector('img');
+				openImagePreview(imgElement.src, imgElement.alt);
+			} else if (videoContainer) {
+				const videoUrl = videoContainer.dataset.url;
+				const noteId = videoContainer.dataset.noteId;
+				openVideoPreview(videoUrl, `Video from note ${noteId}`);
+			}
+		});
 	attachmentsContent.addEventListener('contextmenu', e => {
 		// 这里的目标是整个可下载的文件卡片
 		const link = e.target.closest('.attachment-item-file');
