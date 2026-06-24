@@ -232,7 +232,16 @@ async function handleTimelineRequest(request, env) {
 		// 在 JavaScript 中进行分组统计
 		const timeline = {};
 		for (const note of results) {
-			const date = new Date(note.updated_at);
+			const rawTs = note.updated_at;
+			let date;
+			// 兼容数字毫秒时间戳 / 标准字符串时间
+			if (/^\d+$/.test(rawTs)) {
+				date = new Date(Number(rawTs));
+			} else {
+				date = new Date(rawTs);
+			}
+			// 无效时间直接跳过，不抛数据库错误中断接口
+			if (isNaN(date.getTime())) continue;
 			const parts = timezoneFormatter.formatToParts(date);
 			const year = parseInt(parts.find(p => p.type === 'year').value, 10);
 			const month = parseInt(parts.find(p => p.type === 'month').value, 10);
