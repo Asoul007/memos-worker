@@ -5498,6 +5498,8 @@ function toggleLang() {
 					attachmentsState.allData = attachmentsState.allData.filter(item => item.noteId != noteId);
 					allNotesCache = allNotesCache.filter(n => n.id !== parseInt(noteId));
 					showToast(t('File and empty note removed.'), 'info');
+					loadAndRenderStats();
+					loadAndRenderTags();
 				} else {
 					attachmentItem.remove();
 					if (_imgUrl) {
@@ -5509,6 +5511,8 @@ function toggleLang() {
 						originalNote.files = originalNote.files.filter(f => f.id !== fileId);
 					}
 					showToast(t('File deleted successfully.'));
+					loadAndRenderStats();
+					loadAndRenderTags();
 				}
 
 			} catch (error) {
@@ -8640,6 +8644,8 @@ function toggleLang() {
 						currentNote.files = currentNote.files.filter(f => f.id !== fileId);
 					}
 					showToast(t('File deleted successfully.'));
+					loadAndRenderStats();
+					loadAndRenderTags();
 				}
 
 			} catch (error) {
@@ -9215,7 +9221,7 @@ function toggleLang() {
 			const listElement = tagsContainer.querySelector('ul');
 
 			if (tags.length === 0) {
-				listElement.innerHTML = '<li><div class="tag-item-placeholder">No tags yet.</div></li>';
+				listElement.innerHTML = '<li><div class="tag-item-placeholder">' + t('No tags yet') + '</div></li>';
 				return;
 			}
 			tags.forEach(tag => {
@@ -9251,6 +9257,7 @@ function toggleLang() {
 				const tagItem = deleteBtn.closest('.tag-item');
 				if (tagItem) tagItem.remove();
 				showToast(t('Tag deleted.'), 'success');
+				loadAndRenderStats();
 			} catch (error) {
 				showCustomAlert('Error: ' + error.message, 'error');
 			}
