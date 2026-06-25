@@ -4625,7 +4625,7 @@ function toggleLang() {
   applyLanguage();
   loadAndRenderTimeline();
   reRenderCachedNotes();
-  applyTheme(document.body.dataset.theme || 'light');
+  applyTheme(document.body.dataset.theme || 'dark');
 }
 
 	async function saveSettings() {
@@ -6983,7 +6983,7 @@ function toggleLang() {
 	const initializeTheme = () => {
 		const savedTheme = localStorage.getItem('theme');
 		const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-		applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'light'));
+		applyTheme(savedTheme || (systemPrefersDark ? 'dark' : 'dark'));
 	};
 
 	themeToggleBtn.addEventListener('click', toggleTheme);
@@ -7372,6 +7372,7 @@ function toggleLang() {
 		authContainer.style.display = 'block';
 		appContainer.style.display = 'none';
 		document.body.classList.add('auth-visible');
+		applyLanguage();
 	};
 	const showAppScreen = () => {
 		if (load) return;
