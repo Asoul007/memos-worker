@@ -985,8 +985,10 @@ function applyLanguage() {
 				if (!selectedEl) return;
 				nodeId = selectedEl.dataset.id;
 			}
-			const nodeToDelete = flatNodes.find(n => n.id === nodeId);
-			if (!nodeToDelete || !confirm(t('Are you sure you want to delete "{name}"?').replace('{name}', nodeToDelete.title))) return;
+			const el = document.querySelector('.tree-item.selected') || document.querySelector(`.tree-item[data-id="${nodeId}"]`);
+			if (!el) { alert('Node element not found! id=' + nodeId); return; }
+			const nodeTitle = el.querySelector('.name')?.textContent || '';
+			if (!confirm(t('Are you sure you want to delete "{name}"?').replace('{name}', nodeTitle))) return;
 			await api.deleteNode(nodeId);
 			await refreshFileTree();
 			if (nodeId === activeNoteId) {
@@ -1001,10 +1003,11 @@ function applyLanguage() {
 				if (!selectedEl) return;
 				nodeId = selectedEl.dataset.id;
 			}
-			const nodeToRename = flatNodes.find(n => n.id === nodeId);
-			if (!nodeToRename) return;
-			const newTitle = prompt(t('New name:'), nodeToRename.title);
-			if (newTitle && newTitle.trim() && newTitle.trim() !== nodeToRename.title) {
+			const el = document.querySelector('.tree-item.selected') || document.querySelector(`.tree-item[data-id="${nodeId}"]`);
+			if (!el) { alert('Node element not found! id=' + nodeId); return; }
+			const currentTitle = el.querySelector('.name')?.textContent || '';
+			const newTitle = prompt(t('New name:'), currentTitle);
+			if (newTitle && newTitle.trim() && newTitle.trim() !== currentTitle) {
 				await api.renameNode(nodeId, newTitle.trim());
 				await refreshFileTree();
 			}
@@ -1060,15 +1063,6 @@ function applyLanguage() {
 					console.error('Context menu action failed:', err);
 					alert('Error: ' + err.message);
 				}
-				contextMenu.style.display = 'none';
-			});
-			// Direct button handlers
-			renameBtn.addEventListener('click', async () => {
-				if (selectedNodeId) await handleRename(selectedNodeId).catch(e => alert(e.message));
-				contextMenu.style.display = 'none';
-			});
-			deleteBtn.addEventListener('click', async () => {
-				if (selectedNodeId) await handleDelete(selectedNodeId).catch(e => alert(e.message));
 				contextMenu.style.display = 'none';
 			});
 			document.addEventListener('click', (e) => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
