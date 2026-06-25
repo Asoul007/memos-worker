@@ -154,6 +154,10 @@ async function handleApiRequest(request, env) {
 	if (pathname === '/api/tags') {
 		return handleTagsList(request, env);
 	}
+	const tagDeleteMatch = pathname.match(/^\/api\/tags\/([^\/]+)$/);
+	if (request.method === 'DELETE' && tagDeleteMatch) {
+		return handleTagDelete(decodeURIComponent(tagDeleteMatch[1]), env);
+	}
 	const fileMatch = pathname.match(/^\/api\/files\/([^\/]+)\/([^\/]+)$/);
 	if (fileMatch) {
 		const [, noteId, fileId] = fileMatch;
@@ -374,6 +378,20 @@ async function handleTagsList(request, env) {
 		return jsonResponse(results);
 	} catch (e) {
 		console.error("Tags List Error:", e.message);
+		return jsonResponse({ error: 'Database Error' }, 500);
+	}
+}
+
+async function handleTagDelete(tagName, env) {
+	const db = env.DB;
+	try {
+		const { meta } = await db.prepare("DELETE FROM tags WHERE name = ?").bind(tagName).run();
+		if (meta.changes === 0) {
+			return jsonResponse({ error: 'Tag not found' }, 404);
+		}
+		return jsonResponse({ success: true });
+	} catch (e) {
+		console.error("Tag Delete Error:", e.message);
 		return jsonResponse({ error: 'Database Error' }, 500);
 	}
 }

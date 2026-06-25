@@ -1521,6 +1521,7 @@
   }
 
   .tag-item {
+	position: relative;
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -1564,6 +1565,35 @@
 
   .tag-item.active .tag-count {
 	background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .tag-delete-btn {
+	position: absolute;
+	right: 4px;
+	top: 50%;
+	transform: translateY(-50%);
+	background: none;
+	border: none;
+	color: var(--text-secondary);
+	cursor: pointer;
+	padding: 2px 4px;
+	border-radius: 4px;
+	font-size: 1rem;
+	line-height: 1;
+	opacity: 0;
+	transition: opacity 0.2s ease, color 0.2s ease;
+  }
+  .tag-item:hover .tag-delete-btn {
+	opacity: 1;
+  }
+  .tag-delete-btn:hover {
+	color: var(--danger-color, #e53e3e);
+  }
+  .tag-item.active .tag-delete-btn {
+	color: rgba(255,255,255,0.7);
+  }
+  .tag-item.active .tag-delete-btn:hover {
+	color: white;
   }
 
   .tag-item-placeholder {
@@ -4220,6 +4250,9 @@ const LANG = {
     "Memos here...": "在此写笔记...",
     "Nothing here yet.": "还没有笔记。",
     "No more notes.": "没有更多了。",
+    "Delete tag": "删除标签",
+    "Tag deleted.": "标签已删除。",
+    "Are you sure you want to delete tag \"{tag}\"?": "确定要删除标签 \"{tag}\" 吗？",
     "Loading more...": "加载更多...",
     "Pinned": "置顶",
     "Failed to load:": "加载失败：",
@@ -4405,6 +4438,9 @@ const LANG = {
     "Memos here...": "Memos here...",
     "Nothing here yet.": "Nothing here yet.",
     "No more notes.": "No more notes.",
+    "Delete tag": "Delete tag",
+    "Tag deleted.": "Tag deleted.",
+    "Are you sure you want to delete tag \"{tag}\"?": "Are you sure you want to delete tag \"{tag}\"?",
     "Loading more...": "Loading more...",
     "Pinned": "Pinned",
     "Failed to load:": "Failed to load:",
@@ -9191,6 +9227,7 @@ function toggleLang() {
                             <span class='tag-name'>${tag.name}</span>
                         </span>
                         <span class='tag-count'>${tag.count}</span>
+                        <button class='tag-delete-btn' title='${t('Delete tag')}' data-tag-name='${tag.name}'>×</button>
                     </div>
                 `;
 				listElement.appendChild(tagLi);
@@ -9202,7 +9239,23 @@ function toggleLang() {
 	}
 
 	const clearTagsBtn = document.getElementById('clear-tags-filter-btn');
-	document.getElementById('tags-container').addEventListener('click', (event) => {
+	document.getElementById('tags-container').addEventListener('click', async (event) => {
+		const deleteBtn = event.target.closest('.tag-delete-btn');
+		if (deleteBtn) {
+			const tagName = deleteBtn.dataset.tagName;
+			const msg = t('Are you sure you want to delete tag "{tag}"?').replace('{tag}', tagName);
+			const confirmed = await showCustomConfirm(msg);
+			try {
+				const response = await fetch('/api/tags/' + encodeURIComponent(tagName), { method: 'DELETE' });
+				if (!response.ok) throw new Error('Failed to delete tag');
+				const tagItem = deleteBtn.closest('.tag-item');
+				if (tagItem) tagItem.remove();
+				showToast(t('Tag deleted.'), 'success');
+			} catch (error) {
+				showCustomAlert('Error: ' + error.message, 'error');
+			}
+			return;
+		}
 		const item = event.target.closest('.tag-item');
 		if (!item) return;
 		appState.filters.tag = item.dataset.tagName;
