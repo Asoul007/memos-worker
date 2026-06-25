@@ -962,9 +962,9 @@
 		function setupEventListeners() {
 			themeToggleBtn.addEventListener('click', handleThemeToggle);
 			saveBtn.addEventListener('click', saveActiveNote);
-			renameBtn.addEventListener('click', e => { e.stopPropagation(); handleRename(selectedNodeId); });
-			deleteBtn.addEventListener('click', e => { e.stopPropagation(); handleDelete(selectedNodeId); });
-			document.addEventListener('click', () => contextMenu.style.display = 'none');
+			renameBtn.addEventListener('click', () => handleRename(selectedNodeId));
+			deleteBtn.addEventListener('click', () => handleDelete(selectedNodeId));
+			document.addEventListener('click', (e) => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
 			newNoteBtn.addEventListener('click', async () => { const name = prompt('新文档名称:'); if (name) { await api.createNode({type: 'file', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
 			newFolderBtn.addEventListener('click', async () => { const name = prompt('新文件夹名称:'); if (name) { await api.createNode({type: 'folder', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
 			fileTreeEl.addEventListener('click', e => {

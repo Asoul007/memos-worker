@@ -189,7 +189,7 @@ async function handleStatsRequest(request, env) {
 	try {
 		const memosCountQuery = db.prepare("SELECT COUNT(*) as total FROM notes WHERE is_archived = '0'");
 		const tagsCountQuery = db.prepare("SELECT COUNT(DISTINCT nt.tag_id) as total FROM note_tags nt JOIN notes n ON nt.note_id = n.id WHERE n.is_archived = '0'");
-		const oldestNoteQuery = db.prepare("SELECT MIN(updated_at) as oldest_ts FROM notes");
+		const oldestNoteQuery = db.prepare("SELECT MIN(updated_at) as oldest_ts FROM notes WHERE is_archived = '0'");
 
 		const [memosResult, tagsResult, oldestNoteResult] = await Promise.all([
 			memosCountQuery.first(),
@@ -227,7 +227,7 @@ async function handleTimelineRequest(request, env) {
 		// D1 不直接支持 strftime 或 to_char, 我们需要获取所有创建时间，然后在 JS 中处理
 		// 注意：如果笔记数量巨大 (几十万条)，这个查询可能会有性能问题。
 		// 对于几千到几万条笔记，这是完全可以接受的。
-		const stmt = db.prepare("SELECT updated_at FROM notes ORDER BY updated_at DESC");
+		const stmt = db.prepare("SELECT updated_at FROM notes WHERE is_archived = '0' ORDER BY updated_at DESC");
 		const { results } = await stmt.all();
 		if (!results) {
 			return jsonResponse({});
