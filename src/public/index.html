@@ -729,13 +729,9 @@
 	margin-bottom: 0.5rem;
   }
 
-  #notes-container::after {
-	content: '没有更多内容';
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 9rem;
-	padding: 1rem 0 4rem 0;
+  .notes-end-marker {
+	text-align: center;
+	padding: 1rem 0 8rem 0;
 	color: var(--text-secondary);
 	font-size: 0.9rem;
   }
@@ -5722,6 +5718,13 @@ function toggleLang() {
 					if (allNotesCache.length > 0) {
 						scrollLoader.textContent = t('No more notes.');
 						scrollLoader.style.display = 'block';
+						if (!document.getElementById('notes-end-marker')) {
+							const endMarker = document.createElement('div');
+							endMarker.className = 'notes-end-marker';
+							endMarker.textContent = t('No more notes.');
+							endMarker.id = 'notes-end-marker';
+							notesContainer.appendChild(endMarker);
+						}
 					} else {
 						notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${appState.baseMode === "favorites" ? t("No favorites yet.") : appState.baseMode === "archive" ? t("No archives yet.") : t("Nothing here yet.")}</div>`;
 						scrollLoader.style.display = 'none';
@@ -7859,6 +7862,13 @@ function toggleLang() {
 				if (allNotesCache.length > 0) {
 					scrollLoader.textContent = t('No more notes.');
 					scrollLoader.style.display = 'block';
+					if (!document.getElementById('notes-end-marker')) {
+						const endMarker = document.createElement('div');
+						endMarker.className = 'notes-end-marker';
+						endMarker.textContent = t('No more notes.');
+						endMarker.id = 'notes-end-marker';
+						notesContainer.appendChild(endMarker);
+					}
 				} else {
 					notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${appState.baseMode === "favorites" ? t("No favorites yet.") : appState.baseMode === "archive" ? t("No archives yet.") : t("Nothing here yet.")}</div>`;
 					scrollLoader.style.display = 'none';
@@ -8141,6 +8151,13 @@ function toggleLang() {
 		noteCounter = 1;
 		renderNotes(allNotesCache);
 		applyLanguage();
+		if (allNotesCache.length > 0 && !document.getElementById('notes-end-marker')) {
+			const endMarker = document.createElement('div');
+			endMarker.className = 'notes-end-marker';
+			endMarker.textContent = t('No more notes.');
+			endMarker.id = 'notes-end-marker';
+			notesContainer.appendChild(endMarker);
+		}
 	}
 
 	// --- Main Form and File Handling ---
