@@ -725,6 +725,10 @@
 	box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   }
 
+  #notes-container > .note:last-child {
+	margin-bottom: 1rem;
+  }
+
   .note-header {
 	display: flex;
 	justify-content: space-between;
@@ -935,12 +939,7 @@
 	overflow-y: auto;
 	flex: 1;
 	min-height: 0;
-  }
-
-  #notes-section::after {
-	content: '';
-	display: block;
-	height: 1rem;
+	max-height: 100%;
   }
 
   .icon-btn.pinned {
