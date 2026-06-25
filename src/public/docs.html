@@ -274,9 +274,9 @@
 	</aside>
 </div>
 <div id="context-menu">
-	<button id="ctx-rename-btn"><i class="fas fa-edit"></i> Rename</button>
-	<button id="ctx-move-btn" disabled><i class="fas fa-arrows-alt"></i> Move (Drag & Drop)</button>
-	<button id="ctx-delete-btn"><i class="fas fa-trash-alt"></i> Delete</button>
+	<button id="ctx-rename-btn"><i class="fas fa-edit"></i> 重命名</button>
+	<button id="ctx-move-btn" disabled><i class="fas fa-arrows-alt"></i> 移动（拖放）</button>
+	<button id="ctx-delete-btn"><i class="fas fa-trash-alt"></i> 删除</button>
 </div>
 <div id="editor-loader" class="hidden"><div class="spinner"></div></div>
 
@@ -910,7 +910,7 @@
 		}
 		async function handleDelete(nodeId) {
 			const nodeToDelete = flatNodes.find(n => n.id === nodeId);
-			if (!nodeToDelete || !confirm(`delete "${nodeToDelete.title}"?`)) return;
+			if (!nodeToDelete || !confirm(`确定要删除"${nodeToDelete.title}"吗？`)) return;
 			await api.deleteNode(nodeId);
 			await refreshFileTree();
 			if (nodeId === activeNoteId) {
@@ -922,7 +922,7 @@
 		async function handleRename(nodeId) {
 			const nodeToRename = flatNodes.find(n => n.id === nodeId);
 			if (!nodeToRename) return;
-			const newTitle = prompt('New name:', nodeToRename.title);
+			const newTitle = prompt('新名称:', nodeToRename.title);
 			if (newTitle && newTitle.trim() && newTitle.trim() !== nodeToRename.title) {
 				await api.renameNode(nodeId, newTitle.trim());
 				await refreshFileTree();
@@ -962,11 +962,11 @@
 		function setupEventListeners() {
 			themeToggleBtn.addEventListener('click', handleThemeToggle);
 			saveBtn.addEventListener('click', saveActiveNote);
-			renameBtn.addEventListener('click', () => handleRename(selectedNodeId));
-			deleteBtn.addEventListener('click', () => handleDelete(selectedNodeId));
+			renameBtn.addEventListener('click', e => { e.stopPropagation(); handleRename(selectedNodeId); });
+			deleteBtn.addEventListener('click', e => { e.stopPropagation(); handleDelete(selectedNodeId); });
 			document.addEventListener('click', () => contextMenu.style.display = 'none');
-			newNoteBtn.addEventListener('click', async () => { const name = prompt('New doc name:'); if (name) { await api.createNode({type: 'file', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
-			newFolderBtn.addEventListener('click', async () => { const name = prompt('New folder name:'); if (name) { await api.createNode({type: 'folder', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
+			newNoteBtn.addEventListener('click', async () => { const name = prompt('新文档名称:'); if (name) { await api.createNode({type: 'file', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
+			newFolderBtn.addEventListener('click', async () => { const name = prompt('新文件夹名称:'); if (name) { await api.createNode({type: 'folder', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
 			fileTreeEl.addEventListener('click', e => {
 				const target = e.target.closest('.tree-item'); if (!target) return;
 				const id = target.dataset.id;
