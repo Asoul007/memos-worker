@@ -387,6 +387,8 @@ const LANG = {
     "New folder name:": "新文件夹名称:",
     "Are you sure you want to delete \"{name}\"?": "确定要删除\"{name}\"吗？",
   },
+		"NO docs": "没有文档",
+		"Create a new note to get started.": "新建一个文档开始使用",
   en: {
     "Save": "Save",
     "Saved": "Saved",
@@ -943,7 +945,7 @@ function applyLanguage() {
 			await refreshFileTree();
 			const firstFile = flatNodes.find(node => node.type === 'file');
 			if (firstFile) await loadNote(firstFile.id);
-			else { quill.root.innerHTML = '<h1>NO docs</h1><p>Create a new note to get started.</p>'; setEditorEditable(false); }
+			else { quill.root.innerHTML = '<h1>' + t('NO docs') + '</h1><p>' + t('Create a new note to get started.') + '</p>'; setEditorEditable(false); }
 		}
 		async function loadNote(noteId) {
 			if (!noteId || noteId === activeNoteId) return;
@@ -1077,7 +1079,7 @@ function applyLanguage() {
 				document.querySelector('.tree-item.selected')?.classList.remove('selected');
 				target.classList.add('selected'); selectedNodeId = id;
 				if (target.classList.contains('file')) loadNote(id);
-				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.nextElementSibling; if (nested && nested.classList.contains('nested')) { nested.classList.toggle('hidden', isNowCollapsed); } }
+				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.parentElement.querySelector('.nested'); alert('Folder: ' + id + ' collapsed=' + isNowCollapsed + ' nested_found=' + (!!nested) + ' hidden=' + (nested ? nested.classList.contains('hidden') : '') + ' content=' + (nested ? nested.innerHTML.length : 0) + ' display=' + (nested ? getComputedStyle(nested).display : '')); if (nested) { nested.classList.toggle('hidden', isNowCollapsed); } }
 			});
 			fileTreeEl.addEventListener('contextmenu', e => {
 				e.preventDefault(); const target = e.target.closest('.tree-item'); if (!target) return;
