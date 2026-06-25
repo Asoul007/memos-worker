@@ -307,8 +307,10 @@ async function handleSearchRequest(request, env) {
 
 	const db = env.DB;
 	try {
-		let whereClauses = ["notes_fts MATCH ?"];
-		let bindings = [query + '*'];
+		const sanitized = query.replace(/["*()+\-^]/g, " ").replace(/\s+/g, " ").trim();
+		const ftsQuery = sanitized.split(/\s+/).map(w => w + "*").join(" ");
+		let whereClauses = ["fts MATCH ?"];
+		let bindings = [ftsQuery];
 		let joinClause = "";
 		if (isFavoritesMode) {
 			whereClauses.push("n.is_favorited = '1'");
@@ -328,6 +330,12 @@ async function handleSearchRequest(request, env) {
             `;
 			whereClauses.push("t.name = ?");
 			bindings.push(tagName);
+		}
+		const isArchivedMode = searchParams.get('archived') === 'true';
+		if (isArchivedMode) {
+			whereClauses.push("n.is_archived = '1'");
+		} else {
+			whereClauses.push("n.is_archived = '0'");
 		}
 
 		const whereString = whereClauses.join(" AND ");
