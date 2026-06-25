@@ -4268,6 +4268,8 @@ const LANG = {
     "Save": "保存",
     "Memos here...": "在此写笔记...",
     "Nothing here yet.": "还没有笔记。",
+    "No favorites yet.": "还没有收藏的笔记。",
+    "No archives yet.": "还没有归档的笔记。",
     "No more notes.": "没有更多了。",
     "Delete tag": "删除标签",
     "Tag deleted.": "标签已删除。",
@@ -4456,6 +4458,8 @@ const LANG = {
     "Fullscreen Edit": "Fullscreen Edit",
     "Memos here...": "Memos here...",
     "Nothing here yet.": "Nothing here yet.",
+    "No favorites yet.": "No favorites yet.",
+    "No archives yet.": "No archives yet.",
     "No more notes.": "No more notes.",
     "Delete tag": "Delete tag",
     "Tag deleted.": "Tag deleted.",
@@ -5698,7 +5702,7 @@ function toggleLang() {
 						scrollLoader.textContent = t('No more notes.');
 						scrollLoader.style.display = 'block';
 					} else {
-						notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${t("Nothing here yet.")}</div>`;
+						notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${appState.baseMode === "favorites" ? t("No favorites yet.") : appState.baseMode === "archive" ? t("No archives yet.") : t("Nothing here yet.")}</div>`;
 						scrollLoader.style.display = 'none';
 					}
 				}
@@ -7834,7 +7838,7 @@ function toggleLang() {
 					scrollLoader.textContent = t('No more notes.');
 					scrollLoader.style.display = 'block';
 				} else {
-					notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${t("Nothing here yet.")}</div>`;
+					notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${appState.baseMode === "favorites" ? t("No favorites yet.") : appState.baseMode === "archive" ? t("No archives yet.") : t("Nothing here yet.")}</div>`;
 					scrollLoader.style.display = 'none';
 				}
 			}
