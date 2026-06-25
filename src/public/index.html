@@ -58,10 +58,6 @@
 	--border-color: #4a5568;
 	--danger-color: #f56565;
   }
-  html, body {
-	height: 100%;
-	overflow: hidden;
-  }
   html {
 	scrollbar-width: thin;
 	scrollbar-color: var(--border-color) var(--surface-color);
@@ -121,8 +117,7 @@
   body:not(.auth-visible) #app-container {
 	display: flex;
 	flex-direction: column;
-	flex: 1;
-	min-height: 0;
+	height: calc(100vh - 3rem);
   }
   body.auth-visible #app-container {
 	display: none !important;
@@ -155,12 +150,10 @@
   #app-layout-container {
 	display: grid;
 	grid-template-columns: 300px 1fr 100px;
-	grid-template-rows: minmax(0, 1fr);
 	gap: 1.5rem;
 	max-width: 1920px;
 	margin: 0 auto;
 	padding: 2rem 2rem 1rem;
-	height: 100vh;
   }
   #right-sidebar {
 	position: fixed;
@@ -175,10 +168,6 @@
   }
   #main-content-area {
 	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	min-height: 0;
-	overflow: hidden;
   }
 
   #main-content-area .container {
@@ -186,10 +175,6 @@
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 0;
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	flex-direction: column;
   }
 
   #left-sidebar {
@@ -933,9 +918,9 @@
 
   #notes-section {
 	position: relative;
+	overflow-y: auto;
 	flex: 1;
 	min-height: 0;
-	overflow-y: auto;
   }
 
   .icon-btn.pinned {
@@ -5202,7 +5187,7 @@ function toggleLang() {
 			moreMenuPopover.classList.remove('visible');
 		}
 	});
-	notesSection.addEventListener('scroll', hideColorPopover, { passive: true });
+	window.addEventListener('scroll', hideColorPopover, { passive: true });
 
 	const attachmentsState = {
 		allData: [],
@@ -7647,8 +7632,8 @@ function toggleLang() {
 	// --- 返回顶部 ---
 	const scrollThreshold = 300;
 	// 监听窗口滚动事件
-	notesSection.addEventListener('scroll', () => {
-		if (notesSection.scrollTop > scrollThreshold) {
+	window.addEventListener('scroll', () => {
+		if (window.scrollY > scrollThreshold) {
 			backToTopBtn.classList.add('visible');
 		} else {
 			backToTopBtn.classList.remove('visible');
@@ -7656,7 +7641,7 @@ function toggleLang() {
 	});
 
 	backToTopBtn.addEventListener('click', () => {
-		notesSection.scrollTo({
+		window.scrollTo({
 			top: 0,
 			behavior: 'smooth'
 		});
@@ -9059,8 +9044,8 @@ function toggleLang() {
 	});
 
 	// --- Infinite Scroll & Initial Load ---
-	notesSection.addEventListener('scroll', () => {
-		if (notesSection.scrollTop + notesSection.clientHeight >= notesSection.scrollHeight - 100 && appState.pagination.hasMore && !appState.pagination.isLoading) {
+	window.addEventListener('scroll', () => {
+		if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100 && appState.pagination.hasMore && !appState.pagination.isLoading) {
 			fetchNotes(appState.pagination.currentPage + 1);
 		}
 	});
