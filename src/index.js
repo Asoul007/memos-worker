@@ -1529,7 +1529,7 @@ async function handleServeStandaloneImage(imageId, env) {
 function buildTree(nodes, parentId = null) {
 	const tree = [];
 	nodes
-		.filter(node => node.parent_id === parentId || (parentId === null && (node.parent_id === "0" || node.parent_id === null)))
+		.filter(node => String(node.parent_id) === String(parentId) || (parentId === null && (node.parent_id === "0" || node.parent_id === null)))
 		.forEach(node => {
 			const children = buildTree(nodes, node.id);
 			if (children.length > 0) {
