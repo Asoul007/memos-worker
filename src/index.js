@@ -339,7 +339,9 @@ async function handleSearchRequest(request, env) {
 		}
 
 		const whereString = whereClauses.join(" AND ");
-		const stmt = db.prepare(`
+		let notes, hasMore;
+		try {
+			const stmt = db.prepare(`
             SELECT n.* FROM notes n
             JOIN notes_fts fts ON n.id = fts.rowid
             ${joinClause}
@@ -347,12 +349,39 @@ async function handleSearchRequest(request, env) {
             ORDER BY rank
             LIMIT ? OFFSET ?
         `);
-
-		bindings.push(limit + 1, offset);
-		const { results: notesPlusOne } = await stmt.bind(...bindings).all();
-
-		const hasMore = notesPlusOne.length > limit;
-		const notes = notesPlusOne.slice(0, limit);
+			bindings.push(limit + 1, offset);
+			const { results: notesPlusOne } = await stmt.bind(...bindings).all();
+			hasMore = notesPlusOne.length > limit;
+			notes = notesPlusOne.slice(0, limit);
+		} catch (ftsError) {
+			console.error("FTS5 failed, falling back to LIKE:", ftsError.message);
+			const likeBind = ['%' + query + '%'];
+			let likeWhere = ["n.content LIKE ?"];
+			if (isFavoritesMode) likeWhere.push("n.is_favorited = '1'");
+			if (startTimestamp && endTimestamp) {
+				const sm = parseInt(startTimestamp);
+				const em = parseInt(endTimestamp);
+				if (!isNaN(sm) && !isNaN(em)) {
+					likeWhere.push("n.updated_at >= ? AND n.updated_at < ?");
+					likeBind.push(sm, em);
+				}
+			}
+			if (tagName) {
+				likeWhere.push("t.name = ?");
+				likeBind.push(tagName);
+				joinClause = " JOIN note_tags nt ON n.id = nt.note_id JOIN tags t ON nt.tag_id = t.id ";
+			}
+			if (isArchivedMode) {
+				likeWhere.push("n.is_archived = '1'");
+			} else {
+				likeWhere.push("n.is_archived = '0'");
+			}
+			const likeStmt = db.prepare("SELECT n.* FROM notes n " + joinClause + " WHERE " + likeWhere.join(" AND ") + " ORDER BY n.updated_at DESC LIMIT ? OFFSET ?");
+			likeBind.push(limit + 1, offset);
+			const { results: likeResults } = await likeStmt.bind(...likeBind).all();
+			hasMore = likeResults.length > limit;
+			notes = likeResults.slice(0, limit);
+		}
 
 		notes.forEach(note => {
 			if (typeof note.files === 'string') {
