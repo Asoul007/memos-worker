@@ -1081,7 +1081,7 @@ function applyLanguage() {
 				document.querySelector('.tree-item.selected')?.classList.remove('selected');
 				target.classList.add('selected'); selectedNodeId = id;
 				if (target.classList.contains('file')) loadNote(id);
-				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.parentElement.querySelector('.nested'); if (nested) { nested.classList.toggle('hidden', isNowCollapsed); nested.style.display = isNowCollapsed ? 'none' : ''; } }
+				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.parentElement.querySelector('.nested'); alert('click: collapsed=' + isNowCollapsed + ' found_nested=' + (!!nested) + ' content=' + (nested ? nested.innerHTML.length : 0) + ' computed_display=' + (nested ? getComputedStyle(nested).display : '') + ' inline_display=' + (nested ? nested.style.display : '') + ' has_collapsed_class=' + target.classList.contains('collapsed')); if (nested) { nested.classList.toggle('hidden', isNowCollapsed); nested.style.display = isNowCollapsed ? 'none' : ''; } }
 			});
 			fileTreeEl.addEventListener('contextmenu', e => {
 				e.preventDefault(); const target = e.target.closest('.tree-item'); if (!target) return;
