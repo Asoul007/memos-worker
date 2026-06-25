@@ -1029,7 +1029,7 @@ const firstFile = flatNodes.find(node => node.type === 'file');
 		async function refreshFileTree() {
 			const fileSystemTree = await api.getTree();
 			flatNodes = flattenTree(fileSystemTree);
-
+			alert("RN: items=" + fileSystemTree.length + " types=" + fileSystemTree.map(n=>n.type).join(","));
 			renderFileTree(fileSystemTree);
 		}
 		function renderFileTree(fileSystemTree) {
