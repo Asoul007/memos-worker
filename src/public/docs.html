@@ -1073,7 +1073,7 @@ const firstFile = flatNodes.find(node => node.type === 'file');
 				contextMenu.style.display = 'none';
 			});
 			document.addEventListener('click', (e) => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
-			newNoteBtn.addEventListener('click', async () => { const name = prompt(t('New doc name:')); if (name) { await api.createNode({type: 'file', title: name, parent_id: null}); await refreshFileTree(); } });
+			newNoteBtn.addEventListener('click', async () => { const name = prompt(t('New doc name:')); if (name) { try { const res = await api.createNode({type: 'file', title: name, parent_id: null}); alert('Create OK: ' + JSON.stringify(res)); await refreshFileTree(); alert('Refresh done, files=' + document.querySelectorAll('.tree-item.file').length); } catch(e) { alert('Error: ' + e.message); } } });
 			newFolderBtn.addEventListener('click', async () => { const name = prompt(t('New folder name:')); if (name) { await api.createNode({type: 'folder', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
 			fileTreeEl.addEventListener('click', e => {
 				if (suppressClick) return;
