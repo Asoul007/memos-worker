@@ -58,6 +58,10 @@
 	--border-color: #4a5568;
 	--danger-color: #f56565;
   }
+  html, body {
+	height: 100%;
+	overflow: hidden;
+  }
   html {
 	scrollbar-width: thin;
 	scrollbar-color: var(--border-color) var(--surface-color);
@@ -117,7 +121,9 @@
   body:not(.auth-visible) #app-container {
 	display: flex;
 	flex-direction: column;
-	height: calc(100vh - 3rem);
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
   }
   body.auth-visible #app-container {
 	display: none !important;
@@ -156,6 +162,7 @@
 	margin: 0 auto;
 	padding: 2rem 2rem 1rem;
 	height: 100vh;
+	overflow: hidden;
   }
   #right-sidebar {
 	position: fixed;
@@ -169,6 +176,10 @@
 	padding-top: 0.5rem;
   }
   #main-content-area {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
 	min-width: 0;
   }
 
@@ -177,6 +188,11 @@
 	max-width: 1200px;
 	margin: 0 auto;
 	padding: 0;
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
   }
 
   #left-sidebar {
@@ -1408,7 +1424,6 @@
   }
 
   #app-layout-container {
-	min-height: 100vh;
 	box-sizing: border-box;
   }
   #back-to-top-btn {
@@ -3315,8 +3330,8 @@
 						<div class='spinner'></div>
 					</div>
 					<div id='notes-container'></div>
+					<div id='scroll-loader' class='loading-indicator' style='display: none;'>Loading more...</div>
 				</div>
-				<div id='scroll-loader' class='loading-indicator' style='display: none;'>Loading more...</div>
 			</div>
 
 			<!-- 附件浏览页面容器 -->
@@ -5189,7 +5204,7 @@ function toggleLang() {
 			moreMenuPopover.classList.remove('visible');
 		}
 	});
-	window.addEventListener('scroll', hideColorPopover, { passive: true });
+	notesSection.addEventListener('scroll', hideColorPopover, { passive: true });
 
 	const attachmentsState = {
 		allData: [],
@@ -7633,9 +7648,9 @@ function toggleLang() {
 
 	// --- 返回顶部 ---
 	const scrollThreshold = 300;
-	// 监听窗口滚动事件
-	window.addEventListener('scroll', () => {
-		if (window.scrollY > scrollThreshold) {
+	// 监听 notes-section 滚动事件
+	notesSection.addEventListener('scroll', () => {
+		if (notesSection.scrollTop > scrollThreshold) {
 			backToTopBtn.classList.add('visible');
 		} else {
 			backToTopBtn.classList.remove('visible');
@@ -7643,7 +7658,7 @@ function toggleLang() {
 	});
 
 	backToTopBtn.addEventListener('click', () => {
-		window.scrollTo({
+		notesSection.scrollTo({
 			top: 0,
 			behavior: 'smooth'
 		});
@@ -9046,8 +9061,8 @@ function toggleLang() {
 	});
 
 	// --- Infinite Scroll & Initial Load ---
-	window.addEventListener('scroll', () => {
-		if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100 && appState.pagination.hasMore && !appState.pagination.isLoading) {
+	notesSection.addEventListener('scroll', () => {
+		if (notesSection.scrollTop + notesSection.clientHeight >= notesSection.scrollHeight - 100 && appState.pagination.hasMore && !appState.pagination.isLoading) {
 			fetchNotes(appState.pagination.currentPage + 1);
 		}
 	});
