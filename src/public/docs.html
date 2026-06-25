@@ -275,7 +275,6 @@
 </div>
 <div id="context-menu">
 	<button id="ctx-rename-btn"><i class="fas fa-edit"></i> 重命名</button>
-	<button id="ctx-move-btn"><i class="fas fa-arrows-alt"></i> 移动（拖放）</button>
 	<button id="ctx-delete-btn"><i class="fas fa-trash-alt"></i> 删除</button>
 </div>
 <div id="editor-loader" class="hidden"><div class="spinner"></div></div>
@@ -423,7 +422,6 @@ function applyLanguage() {
   });
   // Update context menu buttons
   document.getElementById('ctx-rename-btn').innerHTML = '<i class="fas fa-edit"></i> ' + t('Rename');
-  document.getElementById('ctx-move-btn').innerHTML = '<i class="fas fa-arrows-alt"></i> ' + t('Move');
   document.getElementById('ctx-delete-btn').innerHTML = '<i class="fas fa-trash-alt"></i> ' + t('Delete');
   // Update save button
   const saveBtn = document.getElementById('save-btn');
@@ -450,7 +448,6 @@ function applyLanguage() {
 		const contextMenu = document.getElementById('context-menu');
 		const renameBtn = document.getElementById('ctx-rename-btn');
 		const deleteBtn = document.getElementById('ctx-delete-btn');
-			const moveBtn = document.getElementById('ctx-move-btn');
 		const editorLoader = document.getElementById('editor-loader');
 		const outlineContainer = document.getElementById('outline-container');
 		// const api = mockApi;
@@ -1010,17 +1007,6 @@ function applyLanguage() {
 				await refreshFileTree();
 			}
 		}
-		async function handleMove(nodeId) {
-			if (!nodeId) {
-				const selectedEl = document.querySelector('.tree-item.selected');
-				if (!selectedEl) return;
-				nodeId = selectedEl.dataset.id;
-			}
-			const targetParentId = prompt(t('Move to folder ID (leave empty for root):'));
-			const newParentId = targetParentId && targetParentId.trim() ? targetParentId.trim() : null;
-			await api.moveNode(nodeId, newParentId);
-			await refreshFileTree();
-		}
 		function flattenTree(nodes, parentId = null) {
 			let list = [];
 			nodes.forEach(node => {
@@ -1055,9 +1041,15 @@ function applyLanguage() {
 		function setupEventListeners() {
 			themeToggleBtn.addEventListener('click', handleThemeToggle);
 			saveBtn.addEventListener('click', saveActiveNote);
-			renameBtn.addEventListener('click', () => handleRename(selectedNodeId));
-			deleteBtn.addEventListener('click', () => handleDelete(selectedNodeId));
-				moveBtn.addEventListener('click', () => handleMove(selectedNodeId));
+			// Context menu delegation
+			contextMenu.addEventListener('click', (e) => {
+				const btn = e.target.closest('button');
+				if (!btn) return;
+				const selEl = document.querySelector('.tree-item.selected');
+				const nodeId = selEl ? selEl.dataset.id : null;
+				if (btn.id === 'ctx-rename-btn') handleRename(nodeId);
+				else if (btn.id === 'ctx-delete-btn') handleDelete(nodeId);
+			});
 			document.addEventListener('click', (e) => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
 			newNoteBtn.addEventListener('click', async () => { const name = prompt(t('New doc name:')); if (name) { await api.createNode({type: 'file', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
 			newFolderBtn.addEventListener('click', async () => { const name = prompt(t('New folder name:')); if (name) { await api.createNode({type: 'folder', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
