@@ -945,6 +945,9 @@ function applyLanguage() {
 
 		async function initializeDocs() {
 			await refreshFileTree();
+			const folderCount = flatNodes.filter(n => n.type === 'folder').length;
+			const fileCount = flatNodes.filter(n => n.type === 'file').length;
+			alert('Tree: ' + folderCount + ' folders, ' + fileCount + ' files');
 			const firstFile = flatNodes.find(node => node.type === 'file');
 			if (firstFile) await loadNote(firstFile.id);
 			else { quill.root.innerHTML = '<h1>' + t('NO docs') + '</h1><p>' + t('Create a new note to get started.') + '</p>'; setEditorEditable(false); }
@@ -1081,7 +1084,7 @@ function applyLanguage() {
 				document.querySelector('.tree-item.selected')?.classList.remove('selected');
 				target.classList.add('selected'); selectedNodeId = id;
 				if (target.classList.contains('file')) loadNote(id);
-				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.parentElement.querySelector('.nested'); alert('click: collapsed=' + isNowCollapsed + ' found_nested=' + (!!nested) + ' content=' + (nested ? nested.innerHTML.length : 0) + ' computed_display=' + (nested ? getComputedStyle(nested).display : '') + ' inline_display=' + (nested ? nested.style.display : '') + ' has_collapsed_class=' + target.classList.contains('collapsed')); if (nested) { nested.classList.toggle('hidden', isNowCollapsed); nested.style.display = isNowCollapsed ? 'none' : ''; } }
+				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.parentElement.querySelector('.nested'); if (nested) { nested.classList.toggle('hidden', isNowCollapsed); nested.style.display = isNowCollapsed ? 'none' : ''; alert('AFTER TOGGLE: collapsed=' + isNowCollapsed + ' computed=' + getComputedStyle(nested).display + ' inline=' + nested.style.display + ' content=' + nested.innerHTML.length + ' children=' + nested.children.length + ' folder_title=' + (target.querySelector('.name')?.textContent || '')); } }
 			});
 			fileTreeEl.addEventListener('contextmenu', e => {
 				e.preventDefault(); const target = e.target.closest('.tree-item'); if (!target) return;
