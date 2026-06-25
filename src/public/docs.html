@@ -85,6 +85,7 @@
   .tree-item.folder.collapsed .toggle-icon { transform: rotate(-90deg); }
   .tree-item.folder.collapsed + .nested { display: none; }
   .nested { list-style: none; padding-left: 20px; }
+	  .nested.hidden { display: none; }
   .tree-item.selected { background-color: var(--selected-bg-color); }
   .tree-item.active.selected { background-color: var(--active-selected-bg-color); }
   .tree-item.dragging { opacity: 0.5; }
@@ -1076,7 +1077,7 @@ function applyLanguage() {
 				document.querySelector('.tree-item.selected')?.classList.remove('selected');
 				target.classList.add('selected'); selectedNodeId = id;
 				if (target.classList.contains('file')) loadNote(id);
-				else if (target.classList.contains('folder')) { if (target.classList.toggle('collapsed')) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); }
+				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.nextElementSibling; if (nested && nested.classList.contains('nested')) { nested.classList.toggle('hidden'); } }
 			});
 			fileTreeEl.addEventListener('contextmenu', e => {
 				e.preventDefault(); const target = e.target.closest('.tree-item'); if (!target) return;
