@@ -7752,7 +7752,7 @@ function toggleLang() {
 		const btn = document.getElementById('login-btn');
 		const err = document.getElementById('login-error');
 		btn.disabled = true;
-		btn.textContent = 'Logging in...';
+		btn.textContent = t('Logging in...');
 		err.textContent = '';
 		try {
 			const res = await fetch('/api/login', {
