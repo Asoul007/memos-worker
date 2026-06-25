@@ -359,6 +359,8 @@
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify({ new_title })
 		}).then(handleApiResponse),
+
+		getSettings: () => fetch('/api/settings').then(handleApiResponse),
 	};
 
 // --- i18n ---
@@ -1046,12 +1048,27 @@ function applyLanguage() {
 				const btn = e.target.closest('button');
 				if (!btn) return;
 				const nodeId = selectedNodeId;
+				if (!nodeId) {
+					alert('Please select a document first.');
+					contextMenu.style.display = 'none';
+					return;
+				}
 				try {
 					if (btn.id === 'ctx-rename-btn') await handleRename(nodeId);
 					else if (btn.id === 'ctx-delete-btn') await handleDelete(nodeId);
 				} catch (err) {
 					console.error('Context menu action failed:', err);
+					alert('Error: ' + err.message);
 				}
+				contextMenu.style.display = 'none';
+			});
+			// Direct button handlers
+			renameBtn.addEventListener('click', async () => {
+				if (selectedNodeId) await handleRename(selectedNodeId).catch(e => alert(e.message));
+				contextMenu.style.display = 'none';
+			});
+			deleteBtn.addEventListener('click', async () => {
+				if (selectedNodeId) await handleDelete(selectedNodeId).catch(e => alert(e.message));
 				contextMenu.style.display = 'none';
 			});
 			document.addEventListener('click', (e) => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
