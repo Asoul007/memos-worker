@@ -1042,13 +1042,17 @@ function applyLanguage() {
 			themeToggleBtn.addEventListener('click', handleThemeToggle);
 			saveBtn.addEventListener('click', saveActiveNote);
 			// Context menu delegation
-			contextMenu.addEventListener('click', (e) => {
+			contextMenu.addEventListener('click', async (e) => {
 				const btn = e.target.closest('button');
 				if (!btn) return;
-				const selEl = document.querySelector('.tree-item.selected');
-				const nodeId = selEl ? selEl.dataset.id : null;
-				if (btn.id === 'ctx-rename-btn') handleRename(nodeId);
-				else if (btn.id === 'ctx-delete-btn') handleDelete(nodeId);
+				const nodeId = selectedNodeId;
+				try {
+					if (btn.id === 'ctx-rename-btn') await handleRename(nodeId);
+					else if (btn.id === 'ctx-delete-btn') await handleDelete(nodeId);
+				} catch (err) {
+					console.error('Context menu action failed:', err);
+				}
+				contextMenu.style.display = 'none';
 			});
 			document.addEventListener('click', (e) => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
 			newNoteBtn.addEventListener('click', async () => { const name = prompt(t('New doc name:')); if (name) { await api.createNode({type: 'file', title: name, parent_id: getParentIdForNewNode()}); await refreshFileTree(); } });
@@ -1070,7 +1074,7 @@ function applyLanguage() {
 			fileTreeEl.addEventListener('dragstart', e => { const target = e.target.closest('.tree-item'); if (!target) return; draggedItemId = target.dataset.id; e.dataTransfer.setData('text/plain', draggedItemId); setTimeout(() => target.classList.add('dragging'), 0); });
 			fileTreeEl.addEventListener('dragend', () => document.querySelector('.tree-item.dragging')?.classList.remove('dragging'));
 			fileTreeEl.addEventListener('dragover', e => { e.preventDefault(); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); const target = e.target.closest('.tree-item.folder'); if (target && target.dataset.id !== draggedItemId) target.classList.add('drag-over'); });
-			fileTreeEl.addEventListener('drop', async e => { e.preventDefault(); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); const target = e.target.closest('.tree-item.folder'); const sourceId = e.dataTransfer.getData('text/plain'); if (sourceId) { await api.moveNode(sourceId, target ? target.dataset.id : null); await refreshFileTree(); } });
+			fileTreeEl.addEventListener('drop', async e => { e.preventDefault(); document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over')); const target = e.target.closest('.tree-item.folder'); const sourceId = e.dataTransfer.getData('text/plain'); if (sourceId) { await api.moveNode(sourceId, target ? target.dataset.id : null); if (target) collapsedFolderIds.delete(target.dataset.id); await refreshFileTree(); } });
 		}
 		function setupResizers() {
 			function setupResizer(resizerId, panelId, direction) {
