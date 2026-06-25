@@ -1081,7 +1081,7 @@ function applyLanguage() {
 				document.querySelector('.tree-item.selected')?.classList.remove('selected');
 				target.classList.add('selected'); selectedNodeId = id;
 				if (target.classList.contains('file')) loadNote(id);
-				else if (target.classList.contains('folder')) { const nested = target.parentElement.querySelector('.nested'); if (nested) { const isHidden = getComputedStyle(nested).display === 'none'; if (isHidden) { nested.style.display = ''; nested.classList.remove('hidden'); target.classList.remove('collapsed'); collapsedFolderIds.delete(id); } else { nested.style.display = 'none'; nested.classList.add('hidden'); target.classList.add('collapsed'); collapsedFolderIds.add(id); } } else { const c = target.classList.toggle('collapsed'); if (c) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); } }
+				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.parentElement.querySelector('.nested'); if (nested) { nested.classList.toggle('hidden', isNowCollapsed); nested.style.display = isNowCollapsed ? 'none' : ''; } }
 			});
 			fileTreeEl.addEventListener('contextmenu', e => {
 				e.preventDefault(); const target = e.target.closest('.tree-item'); if (!target) return;
