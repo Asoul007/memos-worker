@@ -7654,7 +7654,7 @@ function toggleLang() {
 		if (filteredTags.length === 0) {
 			const li = document.createElement('li');
 			li.className = 'no-results';
-			li.textContent = filter ? 'No tags found' : 'No tags yet';
+			li.textContent = filter ? t('No tags found') : t('No tags yet');
 			tagDropdownList.appendChild(li);
 			return;
 		}
@@ -8468,6 +8468,7 @@ function toggleLang() {
 		if (appState.baseMode !== 'home') {
 			appState.baseMode = 'home';
 			updateSidebarTabsUI();
+			updateEditorVisibility();
 		}
 
 		reloadNotes();
