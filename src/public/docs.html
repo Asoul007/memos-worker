@@ -329,7 +329,7 @@
 	}
 
 	const realApi = {
-		getTree: () => fetch('/api/docs/tree').then(handleApiResponse),
+		getTree: () => fetch('/api/docs/tree?' + Date.now()).then(handleApiResponse),
 
 		getNode: (id) => fetch(`/api/docs/node/${id}`).then(handleApiResponse),
 
@@ -1032,6 +1032,9 @@ function applyLanguage() {
 		async function refreshFileTree() {
 			const fileSystemTree = await api.getTree();
 			flatNodes = flattenTree(fileSystemTree);
+			const files = flatNodes.filter(n => n.type === 'file').length;
+			const folders = flatNodes.filter(n => n.type === 'folder').length;
+			alert('refresh: files=' + files + ' folders=' + folders + ' raw=' + JSON.stringify(fileSystemTree).substring(0,200));
 			renderFileTree(fileSystemTree);
 		}
 		function renderFileTree(fileSystemTree) {
