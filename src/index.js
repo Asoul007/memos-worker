@@ -187,8 +187,8 @@ async function handleApiRequest(request, env) {
 async function handleStatsRequest(request, env) {
 	const db = env.DB;
 	try {
-		const memosCountQuery = db.prepare("SELECT COUNT(*) as total FROM notes");
-		const tagsCountQuery = db.prepare("SELECT COUNT(DISTINCT tag_id) as total FROM note_tags");
+		const memosCountQuery = db.prepare("SELECT COUNT(*) as total FROM notes WHERE is_archived = '0'");
+		const tagsCountQuery = db.prepare("SELECT COUNT(DISTINCT nt.tag_id) as total FROM note_tags nt JOIN notes n ON nt.note_id = n.id WHERE n.is_archived = '0'");
 		const oldestNoteQuery = db.prepare("SELECT MIN(updated_at) as oldest_ts FROM notes");
 
 		const [memosResult, tagsResult, oldestNoteResult] = await Promise.all([
