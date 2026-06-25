@@ -945,10 +945,7 @@ function applyLanguage() {
 
 		async function initializeDocs() {
 			await refreshFileTree();
-			const folderCount = flatNodes.filter(n => n.type === 'folder').length;
-			const fileCount = flatNodes.filter(n => n.type === 'file').length;
-			alert('Tree: ' + folderCount + ' folders, ' + fileCount + ' files');
-			const firstFile = flatNodes.find(node => node.type === 'file');
+const firstFile = flatNodes.find(node => node.type === 'file');
 			if (firstFile) await loadNote(firstFile.id);
 			else { quill.root.innerHTML = '<h1>' + t('NO docs') + '</h1><p>' + t('Create a new note to get started.') + '</p>'; setEditorEditable(false); }
 		}
@@ -1032,9 +1029,7 @@ function applyLanguage() {
 		async function refreshFileTree() {
 			const fileSystemTree = await api.getTree();
 			flatNodes = flattenTree(fileSystemTree);
-			const files = flatNodes.filter(n => n.type === 'file').length;
-			const folders = flatNodes.filter(n => n.type === 'folder').length;
-			alert('refresh: files=' + files + ' folders=' + folders + ' raw=' + JSON.stringify(fileSystemTree).substring(0,200));
+
 			renderFileTree(fileSystemTree);
 		}
 		function renderFileTree(fileSystemTree) {
@@ -1087,7 +1082,7 @@ function applyLanguage() {
 				document.querySelector('.tree-item.selected')?.classList.remove('selected');
 				target.classList.add('selected'); selectedNodeId = id;
 				if (target.classList.contains('file')) loadNote(id);
-				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.parentElement.querySelector('.nested'); if (nested) { nested.classList.toggle('hidden', isNowCollapsed); nested.style.display = isNowCollapsed ? 'none' : ''; alert('AFTER TOGGLE: collapsed=' + isNowCollapsed + ' computed=' + getComputedStyle(nested).display + ' inline=' + nested.style.display + ' content=' + nested.innerHTML.length + ' children=' + nested.children.length + ' folder_title=' + (target.querySelector('.name')?.textContent || '')); } }
+				else if (target.classList.contains('folder')) { const isNowCollapsed = target.classList.toggle('collapsed'); if (isNowCollapsed) collapsedFolderIds.add(id); else collapsedFolderIds.delete(id); const nested = target.parentElement.querySelector('.nested'); if (nested) { nested.classList.toggle('hidden', isNowCollapsed); nested.style.display = isNowCollapsed ? 'none' : '';  } }
 			});
 			fileTreeEl.addEventListener('contextmenu', e => {
 				e.preventDefault(); const target = e.target.closest('.tree-item'); if (!target) return;
