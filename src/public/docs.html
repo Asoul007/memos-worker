@@ -982,7 +982,7 @@ function applyLanguage() {
 				// 保存后刷新文件树，以便同步更新后的标题
 				await refreshFileTree();
 				// 重新高亮当前激活的文档
-				document.querySelector(`.tree-item[data-id="${activeNoteId}"]`)?.classList.add('active');
+							document.querySelector(`.tree-item[data-id="${activeNoteId}"]`)?.classList.add('active');
 			} catch (error) {
 				saveBtn.innerHTML = '<i class=\'fas fa-times\'></i> ' + t('Error') + '';
 				setTimeout(() => { saveBtn.disabled = false; saveBtn.innerHTML = '<i class=\'fas fa-save\'></i> ' + t('Save') + ''; }, 2000);
@@ -1039,12 +1039,12 @@ function applyLanguage() {
 		}
 		function renderFileTree(fileSystemTree) {
 			const createTreeHtml = (items) => items.sort((a, b) => a.title.localeCompare(b.title)).map(item => {
-				const isSelected = item.id === selectedNodeId ? 'selected' : '';
+				const isSelected = String(item.id) === String(selectedNodeId) ? 'selected' : '';
 				if (item.type === 'file') {
 					const isActive = item.id === activeNoteId ? 'active' : '';
 					return `<li><div class='tree-item file ${isActive} ${isSelected}' data-id='${item.id}' draggable='true'><span class='icon icon-file'><i class='fas fa-file-alt'></i></span><span class='name'>${item.title}</span></div></li>`;
 				} else {
-					const isCollapsed = collapsedFolderIds.has(item.id) ? 'collapsed' : '';
+					const isCollapsed = collapsedFolderIds.has(String(item.id)) ? 'collapsed' : '';
 					return `<li><div class='tree-item folder ${isSelected} ${isCollapsed}' data-id='${item.id}' draggable='true'><span class='icon toggle-icon'><i class='fas fa-caret-down'></i></span><span class='icon icon-folder'><i class='fas fa-folder'></i></span><span class='name'>${item.title}</span></div><ul class='nested'>${item.children ? createTreeHtml(item.children) : ''}</ul></li>`;
 				}
 			}).join('');
@@ -1052,7 +1052,7 @@ function applyLanguage() {
 		}
 		function getParentIdForNewNode() {
 			if (!selectedNodeId) return null;
-			const selectedNode = flatNodes.find(n => n.id === selectedNodeId);
+			const selectedNode = flatNodes.find(n => String(n.id) === String(selectedNodeId));
 			return selectedNode ? (selectedNode.type === 'folder' ? selectedNode.id : selectedNode.parent_id) : null;
 		}
 		function setupEventListeners() {
