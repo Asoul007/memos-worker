@@ -5639,7 +5639,7 @@ function toggleLang() {
 						scrollLoader.textContent = t('No more notes.');
 						scrollLoader.style.display = 'block';
 					} else {
-						notesContainer.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${t("Nothing here yet.")}</div>';
+						notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${t("Nothing here yet.")}</div>`;
 						scrollLoader.style.display = 'none';
 					}
 				}
@@ -7775,7 +7775,7 @@ function toggleLang() {
 					scrollLoader.textContent = t('No more notes.');
 					scrollLoader.style.display = 'block';
 				} else {
-					notesContainer.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${t("Nothing here yet.")}</div>';
+					notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${t("Nothing here yet.")}</div>`;
 					scrollLoader.style.display = 'none';
 				}
 			}
