@@ -1665,6 +1665,7 @@
 	padding: 1px 6px;
 	border-radius: 10px;
 	white-space: nowrap;
+	flex-shrink: 0;
   }
 
   body[data-theme='dark'] .tag-count {
@@ -1685,6 +1686,7 @@
 	font-size: 1rem;
 	line-height: 1;
 	opacity: 0;
+	flex-shrink: 0;
 	transition: opacity 0.2s ease, color 0.2s ease;
   }
   .tag-item:hover .tag-delete-btn {
@@ -2085,8 +2087,16 @@
   .tag-label {
 	display: inline-flex;
 	align-items: center;
-	word-break: break-all;
+	min-width: 0;
+	flex: 1 1 auto;
+	overflow: hidden;
 	padding-right: 1rem;
+  }
+
+  .tag-name {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
   }
 
   .tag-hash {
