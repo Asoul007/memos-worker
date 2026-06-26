@@ -5923,7 +5923,7 @@ function toggleLang() {
 			}
 		} catch (error) {
 			console.error('Initialization failed:', error);
-			document.body.innerHTML = 'Failed to initialize the application. Please check your connection and try again.';
+			document.body.innerHTML = 'Failed to initialize the application. Please check your connection and try again.<br><small style="color:#999">' + error.name + ': ' + error.message + '</small>';
 		} finally {
 			document.body.classList.remove('loading');
 			const initialLoader = document.getElementById('initial-loader');
