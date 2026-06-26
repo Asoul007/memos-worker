@@ -436,6 +436,15 @@
 	min-height: 100vh;
 	padding: 1rem;
 	box-sizing: border-box;
+	background: linear-gradient(135deg, #4a6cf7 0%, #7c3aed 30%, #a855f7 60%, #6366f1 100%);
+	background-size: 400% 400%;
+	animation: gradientShift 12s ease infinite;
+  }
+
+  body[data-theme='dark'].auth-visible {
+	background: linear-gradient(135deg, #0f1923 0%, #1a0a2e 25%, #16213e 50%, #0f3460 75%, #1a0a2e 100%);
+	background-size: 400% 400%;
+	animation: gradientShift 15s ease infinite;
   }
 
   body.auth-visible #app-layout-container {
@@ -443,45 +452,107 @@
   }
 
   #login-form h3 {
-	margin-bottom: 0;
+	margin-bottom: 1.5rem;
+	font-size: 1.6rem;
+	color: #fff;
+	text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+	animation: fadeInUp 0.6s ease forwards;
+	opacity: 0;
+  }
+
+  #login-form h3::before {
+	content: '📝';
+	display: block;
+	font-size: 2.4rem;
+	margin-bottom: 0.5rem;
+  }
+
+  body[data-theme='dark'] #login-form h3 {
+	color: #e2e8f0;
   }
 
   #login-btn {
-	margin-top: 1rem;
-	width: 120px;
+	margin-top: 1.2rem;
+	width: 100%;
+	padding: 12px 24px;
+	background: linear-gradient(135deg, var(--primary-color), #6c5ce7);
+	border: none;
+	color: #fff;
+	font-size: 1.05rem;
+	font-weight: 600;
+	border-radius: 10px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	animation: fadeInUp 0.6s ease forwards;
+	opacity: 0;
+	animation-delay: 0.6s;
+	box-shadow: 0 4px 16px rgba(54, 124, 255, 0.3);
+  }
+
+  #login-btn:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 28px rgba(54, 124, 255, 0.45);
+  }
+
+  #login-btn:active {
+	transform: translateY(0);
   }
 
   #auth-container {
 	text-align: center;
-	background: var(--surface-color);
-	max-width: 400px;
+	background: rgba(255, 255, 255, 0.1);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	max-width: 420px;
 	width: 100%;
-	padding: 2rem;
-	border-radius: .5rem;
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+	padding: 2.5rem 2rem;
+	border-radius: 20px;
+	border: 1px solid rgba(255, 255, 255, 0.25);
+	box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
   }
 
-  #auth-container h1 {
-	margin-top: 0;
-	color: var(--primary-color);
+  body[data-theme='dark'] #auth-container {
+	background: rgba(21, 31, 49, 0.4);
+	border-color: rgba(255, 255, 255, 0.08);
+	box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
   }
 
-  .auth-form input {
+  body.auth-visible .auth-form input {
 	display: block;
 	width: 100%;
-	max-width: 400px;
-	padding: 12px;
+	max-width: 100%;
+	padding: 14px 16px;
 	margin-bottom: 1rem;
-	border: 1px solid var(--border-color);
-	border-radius: 0px;
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	border-radius: 12px;
 	font-size: 1rem;
 	box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.12);
+	color: #fff;
+	transition: all 0.3s ease;
+	animation: fadeInUp 0.6s ease forwards;
+	opacity: 0;
+  }
+
+  body.auth-visible .auth-form input::placeholder {
+	color: rgba(255, 255, 255, 0.6);
+  }
+
+  body.auth-visible .auth-form input:nth-of-type(1) { animation-delay: 0.2s; }
+  body.auth-visible .auth-form input:nth-of-type(2) { animation-delay: 0.4s; }
+
+  body.auth-visible .auth-form input:focus {
+	border-color: rgba(255, 255, 255, 0.5);
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
   }
 
   #login-error {
-	color: var(--danger-color);
-	margin-bottom: .5rem;
+	color: #ff6b6b;
+	margin-bottom: 0.5rem;
 	min-height: 1.2em;
+	font-weight: 500;
+	font-size: 0.9rem;
   }
 
   #app-container {
@@ -935,6 +1006,17 @@
 	to {
 	  transform: rotate(360deg);
 	}
+  }
+
+  @keyframes gradientShift {
+	0% { background-position: 0% 50%; }
+	50% { background-position: 100% 50%; }
+	100% { background-position: 0% 50%; }
+  }
+
+  @keyframes fadeInUp {
+	from { opacity: 0; transform: translateY(24px); }
+	to { opacity: 1; transform: translateY(0); }
   }
 
   body[data-theme='dark'] #refresh-loader {
@@ -7419,6 +7501,13 @@ function toggleLang() {
 		authContainer.style.display = 'block';
 		appContainer.style.display = 'none';
 		document.body.classList.add('auth-visible');
+		// 在登录页面也应用自定义背景（如果已设置）
+		if (settings.backgroundImage) {
+			document.documentElement.style.setProperty('--bg-image-url', `url(${settings.backgroundImage})`);
+			document.documentElement.style.setProperty('--bg-blur', `${settings.backgroundBlur || 0}px`);
+			document.documentElement.style.setProperty('--bg-opacity', settings.backgroundOpacity || 1);
+			document.body.classList.add('custom-background');
+		}
 		applyLanguage();
 	};
 	const showAppScreen = () => {
