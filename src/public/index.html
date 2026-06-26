@@ -9311,6 +9311,7 @@ function toggleLang() {
 			const tagName = deleteBtn.dataset.tagName;
 			const msg = t('Are you sure you want to delete tag "{tag}"?').replace('{tag}', tagName);
 			const confirmed = await showCustomConfirm(msg);
+			if (!confirmed) return;
 			try {
 				const response = await fetch('/api/tags/' + encodeURIComponent(tagName), { method: 'DELETE' });
 				if (!response.ok) throw new Error('Failed to delete tag');
