@@ -5830,7 +5830,6 @@ function toggleLang() {
 					note.is_pinned = note.is_pinned === '1' || note.is_pinned === 1;
 				});
 				allNotesCache = data.notes;
-				console.debug('Notes updated_at samples:', data.notes.slice(0, 3).map(n => ({ id: n.id, updated_at: n.updated_at, type: typeof n.updated_at })));
 				renderNotes(data.notes);
 				applyLanguage();
 				appState.pagination.hasMore = data.hasMore;
@@ -8242,7 +8241,8 @@ function toggleLang() {
 				}
 				let dateKey;
 				try {
-					dateKey = dateFormatter.format(new Date(note.updated_at));
+					const ts = Number(String(note.updated_at).replace(/\.0+$/, ''));
+					dateKey = dateFormatter.format(new Date(ts));
 				} catch {
 					console.warn('Note has invalid updated_at, skipping date grouping', note.id, note.updated_at);
 					return;
