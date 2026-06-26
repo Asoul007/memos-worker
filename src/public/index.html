@@ -1726,6 +1726,50 @@
 	text-decoration: none;
   }
 
+  /* Tag color dot - shown before tag name in sidebar */
+  .tag-color-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+    flex-shrink: 0;
+    border: 1px solid rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    vertical-align: middle;
+  }
+  .tag-color-dot:hover {
+    transform: scale(1.3);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.1);
+  }
+  .tag-item.active .tag-color-dot {
+    border-color: rgba(255,255,255,0.4);
+  }
+  .tag-item.active .tag-color-dot:hover {
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
+  }
+
+  /* Hidden color input for tag color picker */
+  .tag-color-input-hidden {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+  }
+
+  /* Color dot in tag dropdown */
+  .tag-dropdown-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
   #app-layout-container.no-right-sidebar {
 	grid-template-columns: 300px 1fr;
   }
@@ -4222,6 +4266,11 @@
 				link.className = 'inline-tag';
 				link.dataset.tagName = tagName.substring(1).toLowerCase();
 				link.textContent = tagName;
+				// Set tag accent color from cache or default
+				const tagLookupName = tagName.substring(1).toLowerCase();
+				const tagData = allTagsCache.find(t => t.name === tagLookupName);
+				const displayColor = getTagDisplayColor(tagData || { name: tagLookupName, color: null });
+				link.style.setProperty('--tag-accent-color', displayColor);
 				fragment.appendChild(link);
 				lastIndex = offset + match.length;
 			});
@@ -4382,6 +4431,8 @@ const LANG = {
     "Attachments": "附件",
     "Delete tag": "删除标签",
     "Tag deleted.": "标签已删除。",
+    "Change tag color": "修改标签颜色",
+    "Tag color updated.": "标签颜色已更新。",
     "Are you sure you want to delete tag \"{tag}\"?": "确定要删除标签 \"{tag}\" 吗？",
     "Loading more...": "加载更多...",
     "Pinned": "置顶",
@@ -4588,6 +4639,8 @@ const LANG = {
     "Attachments": "Attachments",
     "Delete tag": "Delete tag",
     "Tag deleted.": "Tag deleted.",
+    "Change tag color": "Change tag color",
+    "Tag color updated.": "Tag color updated.",
     "Are you sure you want to delete tag \"{tag}\"?": "Are you sure you want to delete tag \"{tag}\"?",
     "Loading more...": "Loading more...",
     "Pinned": "Pinned",
@@ -6012,6 +6065,29 @@ function toggleLang() {
 		{ name: 'Teal', color: '#3ad3ba', hover: '#287a78' },
 		{ name: 'Yellow', color: '#d69e2e', hover: '#b7791f' }
 	];
+
+	// Tag color palette - distinct colors for auto-assigning to tags
+	const TAG_COLORS = [
+		'#367cff', '#42c251', '#805ad5', '#dd6b20',
+		'#d53f8c', '#e53e3e', '#3ad3ba', '#d69e2e',
+		'#8b5cf6', '#ec4899', '#f59e0b', '#10b981',
+		'#6366f1', '#14b8a6', '#f97316', '#ef4444'
+	];
+
+	// Generate a consistent default color from a tag name string
+	function getDefaultTagColor(tagName) {
+		let hash = 0;
+		for (let i = 0; i < tagName.length; i++) {
+			hash = ((hash << 5) - hash) + tagName.charCodeAt(i);
+			hash |= 0;
+		}
+		return TAG_COLORS[Math.abs(hash) % TAG_COLORS.length];
+	}
+
+	// Get the display color for a tag (stored color, or deterministic default)
+	function getTagDisplayColor(tag) {
+		return tag.color || getDefaultTagColor(tag.name);
+	}
 
 	// 动态填充预设颜色
 	fsColorPalette.innerHTML = themeColors.map(theme =>
@@ -7900,7 +7976,8 @@ function toggleLang() {
 
 		filteredTags.forEach(tag => {
 			const li = document.createElement('li');
-			li.textContent = `#${tag.name}`;
+			const tagColor = getTagDisplayColor(tag);
+			li.innerHTML = `<span class='tag-dropdown-dot' style='background-color: ${tagColor};'></span>#${tag.name}`;
 			li.dataset.tagName = tag.name;
 			tagDropdownList.appendChild(li);
 		});
@@ -9479,6 +9556,7 @@ function toggleLang() {
 			const response = await fetch('/api/tags');
 			if (!response.ok) throw new Error('Failed to fetch tags');
 			const tags = await response.json();
+			allTagsCache = tags; // Populate cache for inline tag colors
 
 			tagsContainer.innerHTML = '<ul></ul>';
 			const listElement = tagsContainer.querySelector('ul');
@@ -9489,9 +9567,11 @@ function toggleLang() {
 			}
 			tags.forEach(tag => {
 				const tagLi = document.createElement('li');
+				const tagColor = getTagDisplayColor(tag);
 				tagLi.innerHTML = `
                     <div class='tag-item' data-tag-name='${tag.name}' title='${t('Filter by tag:')} #${tag.name}'>
                         <span class='tag-label'>
+                            <span class='tag-color-dot' style='background-color: ${tagColor};' data-tag-name='${tag.name}' title='${t('Change tag color')}'></span>
                             <span class='tag-hash'>#</span>
                             <span class='tag-name'>${tag.name}</span>
                         </span>
@@ -9499,6 +9579,16 @@ function toggleLang() {
                         <button class='tag-delete-btn' title='${t('Delete tag')}' data-tag-name='${tag.name}'>×</button>
                     </div>
                 `;
+				// Attach hidden color input to the color dot
+				const colorDot = tagLi.querySelector('.tag-color-dot');
+				if (colorDot) {
+					const hiddenInput = document.createElement('input');
+					hiddenInput.type = 'color';
+					hiddenInput.className = 'tag-color-input-hidden';
+					hiddenInput.value = tagColor;
+					hiddenInput.dataset.tagName = tag.name;
+					colorDot.appendChild(hiddenInput);
+				}
 				listElement.appendChild(tagLi);
 			});
 		} catch (error) {
@@ -9509,6 +9599,16 @@ function toggleLang() {
 
 	const clearTagsBtn = document.getElementById('clear-tags-filter-btn');
 	document.getElementById('tags-container').addEventListener('click', async (event) => {
+		// Color dot click: open native color picker
+		const colorDot = event.target.closest('.tag-color-dot');
+		if (colorDot) {
+			event.stopPropagation(); // Don't trigger tag filter
+			const hiddenInput = colorDot.querySelector('.tag-color-input-hidden');
+			if (hiddenInput) {
+				hiddenInput.click();
+			}
+			return;
+		}
 		const deleteBtn = event.target.closest('.tag-delete-btn');
 		if (deleteBtn) {
 			const tagName = deleteBtn.dataset.tagName;
@@ -9537,6 +9637,42 @@ function toggleLang() {
 
 		reloadNotes();
 	});
+
+	// Listen for color input changes (hidden tag color pickers)
+	document.getElementById('tags-container').addEventListener('input', async (event) => {
+		const hiddenInput = event.target.closest('.tag-color-input-hidden');
+		if (!hiddenInput) return;
+
+		const tagName = hiddenInput.dataset.tagName;
+		const newColor = hiddenInput.value;
+
+		try {
+			const response = await fetch('/api/tags/' + encodeURIComponent(tagName), {
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ color: newColor })
+			});
+			if (!response.ok) throw new Error('Failed to update tag color');
+
+			// Update the color dot's background
+			const colorDot = hiddenInput.parentElement;
+			if (colorDot) colorDot.style.backgroundColor = newColor;
+
+			// Update the tag in the dropdown cache
+			const cachedTag = allTagsCache.find(t => t.name === tagName);
+			if (cachedTag) cachedTag.color = newColor;
+
+			// Update inline tags
+			document.querySelectorAll('.inline-tag[data-tag-name="' + tagName + '"]').forEach(el => {
+				el.style.setProperty('--tag-accent-color', newColor);
+			});
+
+			showToast(t('Tag color updated.'), 'success');
+		} catch (error) {
+			showCustomAlert('Error: ' + error.message, 'error');
+		}
+	});
+
 	clearTagsBtn.innerHTML = `
         <svg xmlns='http://www.w3.org/2000/svg' height='24px' viewBox='0 0 24 24' width='24px' fill='currentColor'>
             <path d='M0 0h24v24H0V0z' fill='none'/>

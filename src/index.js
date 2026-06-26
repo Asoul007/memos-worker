@@ -158,6 +158,9 @@ async function handleApiRequest(request, env) {
 	if (request.method === 'DELETE' && tagDeleteMatch) {
 		return handleTagDelete(decodeURIComponent(tagDeleteMatch[1]), env);
 	}
+	if (request.method === 'PATCH' && tagDeleteMatch) {
+		return handleTagUpdateColor(decodeURIComponent(tagDeleteMatch[1]), request, env);
+	}
 	const fileMatch = pathname.match(/^\/api\/files\/([^\/]+)\/([^\/]+)$/);
 	if (fileMatch) {
 		const [, noteId, fileId] = fileMatch;
@@ -401,13 +404,19 @@ async function handleSearchRequest(request, env) {
 async function handleTagsList(request, env) {
 	const db = env.DB;
 	try {
+		// Auto-migrate: add color column if it doesn't exist
+		try {
+			await db.prepare("ALTER TABLE tags ADD COLUMN color TEXT DEFAULT NULL").run();
+		} catch (e) {
+			// Column already exists, safe to ignore
+		}
 		// 使用 LEFT JOIN 和 COUNT 来统计每个标签关联的笔记数量
 		// ORDER BY count DESC, name ASC 实现了按数量降序、名称升序的排序
 		const stmt = db.prepare(`
-            SELECT t.name, COUNT(nt.note_id) as count
+            SELECT t.name, t.color, COUNT(nt.note_id) as count
             FROM tags t
             LEFT JOIN note_tags nt ON t.id = nt.tag_id
-            GROUP BY t.id, t.name
+            GROUP BY t.id, t.name, t.color
             HAVING count > 0 -- 只返回被使用过的标签
             ORDER BY count DESC, t.name ASC
         `);
@@ -429,6 +438,25 @@ async function handleTagDelete(tagName, env) {
 		return jsonResponse({ success: true });
 	} catch (e) {
 		console.error("Tag Delete Error:", e.message);
+		return jsonResponse({ error: 'Database Error' }, 500);
+	}
+}
+
+async function handleTagUpdateColor(tagName, request, env) {
+	const db = env.DB;
+	try {
+		const { color } = await request.json();
+		// Allow null to reset to default, otherwise validate hex format
+		if (color !== null && !/^#[0-9a-fA-F]{6}$/.test(color)) {
+			return jsonResponse({ error: 'Invalid color format. Use #RRGGBB.' }, 400);
+		}
+		const { meta } = await db.prepare("UPDATE tags SET color = ? WHERE name = ?").bind(color, tagName).run();
+		if (meta.changes === 0) {
+			return jsonResponse({ error: 'Tag not found' }, 404);
+		}
+		return jsonResponse({ success: true, name: tagName, color });
+	} catch (e) {
+		console.error("Tag Update Color Error:", e.message);
 		return jsonResponse({ error: 'Database Error' }, 500);
 	}
 }
