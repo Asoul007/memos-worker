@@ -4050,8 +4050,9 @@
 		}
 
 		addEventListeners() {
-			document.getElementById('calendar-prev').addEventListener('click', () => this.changeMonth(-1));
-			const nextBtn = document.getElementById('calendar-next');
+			const prevBtn = this.container.querySelector('#calendar-prev');
+			const nextBtn = this.container.querySelector('#calendar-next');
+			if (prevBtn) prevBtn.addEventListener('click', () => this.changeMonth(-1));
 			if (nextBtn && !nextBtn.disabled) {
 				nextBtn.addEventListener('click', () => this.changeMonth(1));
 			}
@@ -8238,7 +8239,13 @@ function toggleLang() {
 					console.warn('Note missing updated_at, skipping date grouping', note.id);
 					return;
 				}
-				const dateKey = dateFormatter.format(new Date(note.updated_at));
+				let dateKey;
+				try {
+					dateKey = dateFormatter.format(new Date(note.updated_at));
+				} catch {
+					console.warn('Note has invalid updated_at, skipping date grouping', note.id, note.updated_at);
+					return;
+				}
 				if (!notesByDate.has(dateKey)) {
 					notesByDate.set(dateKey, []);
 				}
