@@ -1,5 +1,5 @@
-const NOTES_PER_PAGE = 10;
-const SESSION_DURATION_SECONDS = 30*86400; // Session 有效期: 30 天
+﻿const NOTES_PER_PAGE = 10;
+const SESSION_DURATION_SECONDS = 30*86400; // Session 鏈夋晥鏈? 30 澶?
 const SESSION_COOKIE = '__session';
 export default {
 	async fetch(request, env, ctx) {
@@ -8,37 +8,37 @@ export default {
 };
 
 /**
- * API 请求的统一处理器和路由
+ * API 璇锋眰鐨勭粺涓€澶勭悊鍣ㄥ拰璺敱
  */
 async function handleApiRequest(request, env) {
 	const { pathname } = new URL(request.url);
 
-	// --- Memos 分享公开路由 ---
-	// 匹配分享页面 /share/some-uuid
+	// --- Memos 鍒嗕韩鍏紑璺敱 ---
+	// 鍖归厤鍒嗕韩椤甸潰 /share/some-uuid
 	const sharePageMatch = pathname.match(/^\/share\/([a-zA-Z0-9-]+)$/);
 	if (sharePageMatch) {
 		const publicId = sharePageMatch[1];
-		// 构建目标 URL，将 publicId 作为查询参数
+		// 鏋勫缓鐩爣 URL锛屽皢 publicId 浣滀负鏌ヨ鍙傛暟
 		const targetUrl = new URL('/share.html', request.url);
 		targetUrl.searchParams.set('id', publicId);
-		// 返回一个 302 临时重定向响应
+		// 杩斿洖涓€涓?302 涓存椂閲嶅畾鍚戝搷搴?
 		return Response.redirect(targetUrl.toString(), 302);
 	}
-	// 匹配获取分享内容的公开 API /api/public/note/some-uuid
+	// 鍖归厤鑾峰彇鍒嗕韩鍐呭鐨勫叕寮€ API /api/public/note/some-uuid
 	const publicNoteMatch = pathname.match(/^\/api\/public\/note\/([a-zA-Z0-9-]+)$/);
 	if (publicNoteMatch && request.method === 'GET') {
 		const publicId = publicNoteMatch[1];
 		return handlePublicNoteRequest(publicId, env);
 	}
-	// 匹配获取分享 Raw 内容的公开 API /api/public/note/raw/some-uuid
+	// 鍖归厤鑾峰彇鍒嗕韩 Raw 鍐呭鐨勫叕寮€ API /api/public/note/raw/some-uuid
 	const publicRawNoteMatch = pathname.match(/^\/api\/public\/note\/raw\/([a-zA-Z0-9-]+)$/);
 	if (publicRawNoteMatch && request.method === 'GET') {
 		const publicId = publicRawNoteMatch[1];
 		return handlePublicRawNoteRequest(publicId, env);
 	}
-	// --- Memos 分享公开路由 ---
+	// --- Memos 鍒嗕韩鍏紑璺敱 ---
 
-	// 公开文件访问路由 (必须在身份验证之前)
+	// 鍏紑鏂囦欢璁块棶璺敱 (蹇呴』鍦ㄨ韩浠介獙璇佷箣鍓?
 	const publicFileMatch = pathname.match(/^\/api\/public\/file\/([a-zA-Z0-9-]+)$/);
 	if (publicFileMatch) {
 		const publicId = publicFileMatch[1];
@@ -49,7 +49,7 @@ async function handleApiRequest(request, env) {
 	if (tgProxyMatch) {
 		return handleTelegramProxy(request, env);
 	}
-	// --- Telegram Webhook 路由 ---
+	// --- Telegram Webhook 璺敱 ---
 	const telegramMatch = pathname.match(/^\/api\/telegram_webhook\/([^\/]+)$/);
 	if (request.method === 'POST' && telegramMatch) {
 		const secret = telegramMatch[1];
@@ -63,7 +63,7 @@ async function handleApiRequest(request, env) {
 		return handleLogout(request, env);
 	}
 
-	// --- 从这里开始，所有 API 都需要认证 ---
+	// --- 浠庤繖閲屽紑濮嬶紝鎵€鏈?API 閮介渶瑕佽璇?---
 	const session = await isSessionAuthenticated(request, env);
 	if (!session) {
 		return jsonResponse({ error: 'Unauthorized' }, 401);
@@ -90,7 +90,7 @@ async function handleApiRequest(request, env) {
 		return handleShareFileRequest(noteId, fileId, request, env);
 	}
 
-	// --- START: 更新后的 Docs API 路由 ---
+	// --- START: 鏇存柊鍚庣殑 Docs API 璺敱 ---
 	if (pathname.startsWith('/api/docs')) {
 		if (pathname === '/api/docs/tree' && request.method === 'GET') {
 			return handleDocsTree(request, env);
@@ -99,14 +99,14 @@ async function handleApiRequest(request, env) {
 			return handleDocsNodeCreate(request, env);
 		}
 
-		// 匹配重命名请求
+		// 鍖归厤閲嶅懡鍚嶈姹?
 		const renameMatch = pathname.match(/^\/api\/docs\/node\/([a-zA-Z0-9-]+)\/rename$/);
 		if (renameMatch && request.method === 'POST') {
 			const nodeId = renameMatch[1];
 			return handleDocsNodeRename(request, nodeId, env);
 		}
 
-		// 匹配所有 /api/docs/node/:id 相关的请求
+		// 鍖归厤鎵€鏈?/api/docs/node/:id 鐩稿叧鐨勮姹?
 		const nodeDetailMatch = pathname.match(/^\/api\/docs\/node\/([a-zA-Z0-9-]+)$/);
 		if (nodeDetailMatch) {
 			const nodeId = nodeDetailMatch[1];
@@ -124,7 +124,7 @@ async function handleApiRequest(request, env) {
 			}
 		}
 	}
-	// --- END: 更新后的 Docs API 路由 ---
+	// --- END: 鏇存柊鍚庣殑 Docs API 璺敱 ---
 
 	if (pathname === '/api/settings') {
 		if (request.method === 'GET') {
@@ -169,6 +169,9 @@ async function handleApiRequest(request, env) {
 	if (pathname === '/api/search') {
 		return handleSearchRequest(request, env);
 	}
+	if (pathname === '/api/notes/export') {
+		return handleExportNotes(request, env);
+	}
 	const noteDetailMatch = pathname.match(/^\/api\/notes\/([^\/]+)$/);
 	if (noteDetailMatch) {
 		const noteId = noteDetailMatch[1];
@@ -182,7 +185,7 @@ async function handleApiRequest(request, env) {
 }
 
 /**
- * 处理统计数据请求
+ * 澶勭悊缁熻鏁版嵁璇锋眰
  */
 async function handleStatsRequest(request, env) {
 	const db = env.DB;
@@ -197,7 +200,7 @@ async function handleStatsRequest(request, env) {
 			oldestNoteQuery.first()
 		]);
 
-		// 直接返回原始毫秒时间戳（数字），前端自行解析，避免 D1 exec 返回值格式问题和时区解析歧义
+		// 鐩存帴杩斿洖鍘熷姣鏃堕棿鎴筹紙鏁板瓧锛夛紝鍓嶇鑷瑙ｆ瀽锛岄伩鍏?D1 exec 杩斿洖鍊兼牸寮忛棶棰樺拰鏃跺尯瑙ｆ瀽姝т箟
 		let oldestTs = null;
 		const rawTs = oldestNoteResult.oldest_ts;
 		if (rawTs !== null) {
@@ -217,58 +220,58 @@ async function handleStatsRequest(request, env) {
 }
 
 /**
- * 处理时间线数据请求，返回按 年 -> 月 -> 日 结构化的笔记数量统计
+ * 澶勭悊鏃堕棿绾挎暟鎹姹傦紝杩斿洖鎸?骞?-> 鏈?-> 鏃?缁撴瀯鍖栫殑绗旇鏁伴噺缁熻
  */
 async function handleTimelineRequest(request, env) {
 	const db = env.DB;
 	try {
 		const { searchParams } = new URL(request.url);
 		const timezone = searchParams.get('timezone') || 'UTC';
-		// D1 不直接支持 strftime 或 to_char, 我们需要获取所有创建时间，然后在 JS 中处理
-		// 注意：如果笔记数量巨大 (几十万条)，这个查询可能会有性能问题。
-		// 对于几千到几万条笔记，这是完全可以接受的。
+		// D1 涓嶇洿鎺ユ敮鎸?strftime 鎴?to_char, 鎴戜滑闇€瑕佽幏鍙栨墍鏈夊垱寤烘椂闂达紝鐒跺悗鍦?JS 涓鐞?
+		// 娉ㄦ剰锛氬鏋滅瑪璁版暟閲忓法澶?(鍑犲崄涓囨潯)锛岃繖涓煡璇㈠彲鑳戒細鏈夋€ц兘闂銆?
+		// 瀵逛簬鍑犲崈鍒板嚑涓囨潯绗旇锛岃繖鏄畬鍏ㄥ彲浠ユ帴鍙楃殑銆?
 		const stmt = db.prepare("SELECT updated_at FROM notes WHERE is_archived = '0' ORDER BY updated_at DESC");
 		const { results } = await stmt.all();
 		if (!results) {
 			return jsonResponse({});
 		}
-		const timezoneFormatter = new Intl.DateTimeFormat('en-US', { // 'en-US' 只是为了格式，不影响结果
+		const timezoneFormatter = new Intl.DateTimeFormat('en-US', { // 'en-US' 鍙槸涓轰簡鏍煎紡锛屼笉褰卞搷缁撴灉
 			timeZone: timezone,
 			year: 'numeric',
 			month: 'numeric',
 			day: 'numeric',
 		});
-		// 在 JavaScript 中进行分组统计
+		// 鍦?JavaScript 涓繘琛屽垎缁勭粺璁?
 		const timeline = {};
 		for (const note of results) {
 			const rawTs = String(note.updated_at).replace(/\.0+$/, "");
 			let date;
-			// 兼容数字毫秒时间戳 / 标准字符串时间
+			// 鍏煎鏁板瓧姣鏃堕棿鎴?/ 鏍囧噯瀛楃涓叉椂闂?
 			if (/^\d+$/.test(rawTs)) {
 				date = new Date(Number(rawTs));
 			} else {
 				date = new Date(rawTs);
 			}
-			// 无效时间直接跳过，不抛数据库错误中断接口
+			// 鏃犳晥鏃堕棿鐩存帴璺宠繃锛屼笉鎶涙暟鎹簱閿欒涓柇鎺ュ彛
 			if (isNaN(date.getTime())) continue;
 			const parts = timezoneFormatter.formatToParts(date);
 			const year = parseInt(parts.find(p => p.type === 'year').value, 10);
 			const month = parseInt(parts.find(p => p.type === 'month').value, 10);
 			const day = parseInt(parts.find(p => p.type === 'day').value, 10);
 
-			// 初始化年
+			// 鍒濆鍖栧勾
 			if (!timeline[year]) {
 				timeline[year] = { count: 0, months: {} };
 			}
-			// 初始化月
+			// 鍒濆鍖栨湀
 			if (!timeline[year].months[month]) {
 				timeline[year].months[month] = { count: 0, days: {} };
 			}
-			// 初始化日
+			// 鍒濆鍖栨棩
 			if (!timeline[year].months[month].days[day]) {
 				timeline[year].months[month].days[day] = { count: 0 };
 			}
-			// 递增计数
+			// 閫掑璁℃暟
 			timeline[year].count++;
 			timeline[year].months[month].count++;
 			timeline[year].months[month].days[day].count++;
@@ -280,23 +283,23 @@ async function handleTimelineRequest(request, env) {
 	}
 }
 /**
- * 处理全文搜索请求，支持分页和叠加筛选条件
+ * 澶勭悊鍏ㄦ枃鎼滅储璇锋眰锛屾敮鎸佸垎椤靛拰鍙犲姞绛涢€夋潯浠?
  */
 async function handleSearchRequest(request, env) {
 	const { searchParams } = new URL(request.url);
 	const query = searchParams.get('q');
 
-	// 1. 如果搜索查询为空或只包含空格，则将请求委托给 handleNotesList
+	// 1. 濡傛灉鎼滅储鏌ヨ涓虹┖鎴栧彧鍖呭惈绌烘牸锛屽垯灏嗚姹傚鎵樼粰 handleNotesList
 	if (!query || query.trim().length === 0) {
-		// 直接调用 handleNotesList 并返回其结果，实现无缝回退
+		// 鐩存帴璋冪敤 handleNotesList 骞惰繑鍥炲叾缁撴灉锛屽疄鐜版棤缂濆洖閫€
 		return handleNotesList(request, env);
 	}
-	// 2. 保留对过短查询的检查
+	// 2. 淇濈暀瀵硅繃鐭煡璇㈢殑妫€鏌?
 	if (query.trim().length < 2) {
 		return jsonResponse({ notes: [], hasMore: false });
 	}
 
-	// --- 引入分页逻辑 ---
+	// --- 寮曞叆鍒嗛〉閫昏緫 ---
 	const page = parseInt(searchParams.get('page') || '1');
 	const offset = (page - 1) * NOTES_PER_PAGE;
 	const limit = NOTES_PER_PAGE;
@@ -396,19 +399,19 @@ async function handleSearchRequest(request, env) {
 }
 
 /**
- * 获取所有标签及其使用次数
+ * 鑾峰彇鎵€鏈夋爣绛惧強鍏朵娇鐢ㄦ鏁?
  */
 async function handleTagsList(request, env) {
 	const db = env.DB;
 	try {
-		// 使用 LEFT JOIN 和 COUNT 来统计每个标签关联的笔记数量
-		// ORDER BY count DESC, name ASC 实现了按数量降序、名称升序的排序
+		// 浣跨敤 LEFT JOIN 鍜?COUNT 鏉ョ粺璁℃瘡涓爣绛惧叧鑱旂殑绗旇鏁伴噺
+		// ORDER BY count DESC, name ASC 瀹炵幇浜嗘寜鏁伴噺闄嶅簭銆佸悕绉板崌搴忕殑鎺掑簭
 		const stmt = db.prepare(`
             SELECT t.name, COUNT(nt.note_id) as count
             FROM tags t
             LEFT JOIN note_tags nt ON t.id = nt.tag_id
             GROUP BY t.id, t.name
-            HAVING count > 0 -- 只返回被使用过的标签
+            HAVING count > 0 -- 鍙繑鍥炶浣跨敤杩囩殑鏍囩
             ORDER BY count DESC, t.name ASC
         `);
 		const { results } = await stmt.all();
@@ -434,7 +437,7 @@ async function handleTagDelete(tagName, env) {
 }
 
 /**
- * 检查 Session Cookie 是否有效
+ * 妫€鏌?Session Cookie 鏄惁鏈夋晥
  */
 async function isSessionAuthenticated(request, env) {
 	const cookieHeader = request.headers.get('Cookie');
@@ -451,7 +454,7 @@ async function isSessionAuthenticated(request, env) {
 }
 
 /**
- * 处理登录请求
+ * 澶勭悊鐧诲綍璇锋眰
  */
 async function handleLogin(request, env) {
 	try {
@@ -473,7 +476,7 @@ async function handleLogin(request, env) {
 }
 
 /**
- * 处理退出登录请求
+ * 澶勭悊閫€鍑虹櫥褰曡姹?
  */
 async function handleLogout(request, env) {
 	const cookieHeader = request.headers.get('Cookie');
@@ -489,7 +492,7 @@ async function handleLogout(request, env) {
 }
 
 /**
- * 从 KV 中获取用户设置。如果 KV 中没有，则返回默认值。
+ * 浠?KV 涓幏鍙栫敤鎴疯缃€傚鏋?KV 涓病鏈夛紝鍒欒繑鍥為粯璁ゅ€笺€?
  */
 async function handleGetSettings(request, env) {
 	const defaultSettings = {
@@ -500,29 +503,29 @@ async function handleGetSettings(request, env) {
 		showTimeline: true,
 		showRightSidebar: true,
 		hideEditorInWaterfall: false,
-		showHeatmap: true, // 默认显示热力图
-		imageUploadDestination: 'local', // 默认使用R2
+		showHeatmap: true, // 榛樿鏄剧ず鐑姏鍥?
+		imageUploadDestination: 'local', // 榛樿浣跨敤R2
 		imgurClientId: '',
 		surfaceColor: '#ffffff',
 		surfaceColorDark: '#151f31',
 		surfaceOpacity: 1,
-		backgroundOpacity: 1, // 默认完全不透明
+		backgroundOpacity: 1, // 榛樿瀹屽叏涓嶉€忔槑
 		backgroundImage: '/bg.jpg',
 		backgroundBlur: 0,
 		waterfallCardWidth: 320,
 		enableDateGrouping: false,
 		telegramProxy: false,
-		showFavorites: true,  // 控制收藏夹
-		showArchive: true,      // 控制归档
-		enablePinning: true,    // 控制置顶功能
-		enableSharing: true,    // 控制分享功能
-		showDocs: true,          // 控制 Docs 链接
+		showFavorites: true,  // 鎺у埗鏀惰棌澶?
+		showArchive: true,      // 鎺у埗褰掓。
+		enablePinning: true,    // 鎺у埗缃《鍔熻兘
+		enableSharing: true,    // 鎺у埗鍒嗕韩鍔熻兘
+		showDocs: true,          // 鎺у埗 Docs 閾炬帴
 		enableContentTruncation: false,
 	};
 
 	let savedSettings = await env.NOTES_KV.get('user_settings', 'json');
 
-	// 如果 KV 中没有设置，则返回默认值
+	// 濡傛灉 KV 涓病鏈夎缃紝鍒欒繑鍥為粯璁ゅ€?
 	if (!savedSettings) {
 		return jsonResponse(defaultSettings);
 	}
@@ -530,7 +533,7 @@ async function handleGetSettings(request, env) {
 }
 
 /**
- * 将用户设置保存到 KV 中。
+ * 灏嗙敤鎴疯缃繚瀛樺埌 KV 涓€?
  */
 async function handleSetSettings(request, env) {
 	try {
@@ -544,8 +547,27 @@ async function handleSetSettings(request, env) {
 }
 
 /**
- * 处理笔记列表的 GET 和 POST
+ * 澶勭悊绗旇鍒楄〃鐨?GET 鍜?POST
  */
+async function handleExportNotes(request, env) {
+	const db = env.DB;
+	try {
+		const stmt = db.prepare("SELECT * FROM notes WHERE is_archived = '0' ORDER BY updated_at DESC");
+		const { results } = await stmt.all();
+		// 清理敏感数据并转换文件字段
+		results.forEach(note => {
+			if (typeof note.files === 'string') {
+				try { note.files = JSON.parse(note.files); } catch (e) { note.files = []; }
+			}
+		});
+		return new Response(JSON.stringify({ notes: results, exportedAt: Date.now() }), {
+			headers: { 'Content-Type': 'application/json' }
+		});
+	} catch (e) {
+		console.error("Export Error:", e.message);
+		return new Response(JSON.stringify({ error: 'Database Error' }), { status: 500 });
+	}
+}
 async function handleNotesList(request, env) {
 	const db = env.DB;
 
@@ -570,12 +592,12 @@ async function handleNotesList(request, env) {
 				if (isArchivedMode) {
 					whereClauses.push("n.is_archived = '1'");
 				} else {
-					// 默认（包括收藏夹）都应该排除已归档的
+					// 榛樿锛堝寘鎷敹钘忓す锛夐兘搴旇鎺掗櫎宸插綊妗ｇ殑
 					whereClauses.push("n.is_archived = '0'");
 				}
 
 				if (startTimestamp && endTimestamp) {
-					// 将字符串时间戳转换为数字
+					// 灏嗗瓧绗︿覆鏃堕棿鎴宠浆鎹负鏁板瓧
 					const startMs = parseInt(startTimestamp);
 					const endMs = parseInt(endTimestamp);
 
@@ -605,7 +627,7 @@ async function handleNotesList(request, env) {
                 LIMIT ? OFFSET ?
             `;
 
-				// 将分页参数添加到 bindings 数组的末尾
+				// 灏嗗垎椤靛弬鏁版坊鍔犲埌 bindings 鏁扮粍鐨勬湯灏?
 				bindings.push(limit + 1, offset);
 
 				const notesStmt = db.prepare(query);
@@ -635,22 +657,22 @@ async function handleNotesList(request, env) {
 				const now = Date.now();
 				const filesMeta = [];
 
-				// 【核心修改】在插入数据库前，先提取图片 URL
+				// 銆愭牳蹇冧慨鏀广€戝湪鎻掑叆鏁版嵁搴撳墠锛屽厛鎻愬彇鍥剧墖 URL
 				const picUrls = extractImageUrls(content);
 				const videoUrls = [];
 
-				// 【核心修改】在 INSERT 语句中加入新的 pics 字段
+				// 銆愭牳蹇冧慨鏀广€戝湪 INSERT 璇彞涓姞鍏ユ柊鐨?pics 瀛楁
 				const insertStmt = db.prepare(
 					"INSERT INTO notes (content, files, is_pinned, created_at, updated_at, pics, videos) VALUES (?, ?, 0, ?, ?, ?, ?) RETURNING id"
 				);
-				// 先用一个空的 files 数组插入
-				// 【核心修改】将提取出的 picUrls 绑定到 SQL 语句中
+				// 鍏堢敤涓€涓┖鐨?files 鏁扮粍鎻掑叆
+				// 銆愭牳蹇冧慨鏀广€戝皢鎻愬彇鍑虹殑 picUrls 缁戝畾鍒?SQL 璇彞涓?
 				const { id: noteId } = await insertStmt.bind(content, "[]", now, now, picUrls, "[]").first();
 				if (!noteId) {
 					throw new Error("Failed to create note and get ID.");
 				}
 
-				// --- 【重要逻辑调整】现在上传的文件，只有非图片类型才算作 "附件" (files) ---
+				// --- 銆愰噸瑕侀€昏緫璋冩暣銆戠幇鍦ㄤ笂浼犵殑鏂囦欢锛屽彧鏈夐潪鍥剧墖绫诲瀷鎵嶇畻浣?"闄勪欢" (files) ---
 				for (const file of files) {
 					if (file.name && file.size > 0 && !file.type.startsWith('image/')) {
 						const fileId = crypto.randomUUID();
@@ -662,7 +684,7 @@ async function handleNotesList(request, env) {
 						}
 					}
 				}
-				// 如果有非图片附件，再更新数据库中的 files 字段
+				// 濡傛灉鏈夐潪鍥剧墖闄勪欢锛屽啀鏇存柊鏁版嵁搴撲腑鐨?files 瀛楁
 				if (filesMeta.length > 0) {
 					const updateFilesStmt = db.prepare("UPDATE notes SET files = ? WHERE id = ?");
 					await updateFilesStmt.bind(JSON.stringify(filesMeta), noteId).run();
@@ -673,7 +695,7 @@ async function handleNotesList(request, env) {
 					}
 
 				await processNoteTags(db, noteId, content);
-				// 获取完整的笔记返回给前端
+				// 鑾峰彇瀹屾暣鐨勭瑪璁拌繑鍥炵粰鍓嶇
 				const newNote = await db.prepare("SELECT * FROM notes WHERE id = ?").bind(noteId).first();
 				if (typeof newNote.files === 'string') {
 					newNote.files = JSON.parse(newNote.files);
@@ -689,7 +711,7 @@ async function handleNotesList(request, env) {
 }
 
 /**
- * 处理单条笔记的 PUT 和 DELETE
+ * 澶勭悊鍗曟潯绗旇鐨?PUT 鍜?DELETE
  */
 async function handleNoteDetail(request, noteId, env) {
 	const db = env.DB;
@@ -699,12 +721,12 @@ async function handleNoteDetail(request, noteId, env) {
 	}
 
 	try {
-		// 首先获取现有笔记，用于文件删除和返回数据
+		// 棣栧厛鑾峰彇鐜版湁绗旇锛岀敤浜庢枃浠跺垹闄ゅ拰杩斿洖鏁版嵁
 		let existingNote = await db.prepare("SELECT * FROM notes WHERE id = ?").bind(id).first();
 		if (!existingNote) {
 			return new Response('Not Found', { status: 404 });
 		}
-		// 确保 files 字段是数组
+		// 纭繚 files 瀛楁鏄暟缁?
 		try {
 			if (typeof existingNote.files === 'string') {
 				existingNote.files = JSON.parse(existingNote.files);
@@ -722,8 +744,8 @@ async function handleNoteDetail(request, noteId, env) {
 					let content = formData.get('content')?.toString() ?? existingNote.content;
 					let currentFiles = existingNote.files;
 
-					// --- 现在的文件处理只关心非图片附件 ---
-					// 处理附件删除 (逻辑不变，因为它操作的是 files 字段)
+					// --- 鐜板湪鐨勬枃浠跺鐞嗗彧鍏冲績闈炲浘鐗囬檮浠?---
+					// 澶勭悊闄勪欢鍒犻櫎 (閫昏緫涓嶅彉锛屽洜涓哄畠鎿嶄綔鐨勬槸 files 瀛楁)
 					const filesToDelete = JSON.parse(formData.get('filesToDelete') || '[]');
 					if (filesToDelete.length > 0) {
 						const r2KeysToDelete = filesToDelete.map(fileId => `${id}/${fileId}`);
@@ -731,7 +753,7 @@ async function handleNoteDetail(request, noteId, env) {
 						currentFiles = currentFiles.filter(file => !filesToDelete.includes(file.id));
 					}
 
-					// 处理从 pics 中删除图片（独立上传的图片，非文件附件）
+					// 澶勭悊浠?pics 涓垹闄ゅ浘鐗囷紙鐙珛涓婁紶鐨勫浘鐗囷紝闈炴枃浠堕檮浠讹級
 					const picsToRemove = JSON.parse(formData.get('picsToRemove') || '[]');
 					if (picsToRemove.length > 0) {
 						const r2ImageKeys = picsToRemove.map(url => {
@@ -741,28 +763,28 @@ async function handleNoteDetail(request, noteId, env) {
 						if (r2ImageKeys.length > 0) {
 							await env.NOTES_R2_BUCKET.delete(r2ImageKeys);
 						}
-						// 从 content 中移除对应的 markdown 图片引用
+						// 浠?content 涓Щ闄ゅ搴旂殑 markdown 鍥剧墖寮曠敤
 						for (const url of picsToRemove) {
 							const escaped = url.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 							content = content.replace(new RegExp(`!\[.*?\]\(\s*${escaped}\s*\)`, 'g'), '');
 						}
 					}
 
-					// 在处理完文件删除后，检查笔记是否应该被删除
+					// 鍦ㄥ鐞嗗畬鏂囦欢鍒犻櫎鍚庯紝妫€鏌ョ瑪璁版槸鍚﹀簲璇ヨ鍒犻櫎
 					const hasNewFiles = formData.getAll('file').some(f => f.name && f.size > 0);
 					if (content.trim() === '' && currentFiles.length === 0 && !hasNewFiles) {
-						// 笔记即将变空，执行删除操作
-						// 1. 删除 R2 中的所有剩余文件（如果有的话，虽然逻辑上这里 currentFiles 应该是空的）
+						// 绗旇鍗冲皢鍙樼┖锛屾墽琛屽垹闄ゆ搷浣?
+						// 1. 鍒犻櫎 R2 涓殑鎵€鏈夊墿浣欐枃浠讹紙濡傛灉鏈夌殑璇濓紝铏界劧閫昏緫涓婅繖閲?currentFiles 搴旇鏄┖鐨勶級
 						const allR2Keys = existingNote.files.map(file => `${id}/${file.id}`);
 						if (allR2Keys.length > 0) {
 							await env.NOTES_R2_BUCKET.delete(allR2Keys);
 						}
-						// 2. 从数据库删除笔记
+						// 2. 浠庢暟鎹簱鍒犻櫎绗旇
 						await db.prepare("DELETE FROM notes WHERE id = ?").bind(id).run();
-						// 3. 返回特殊标记，告知前端整个笔记已被删除
+						// 3. 杩斿洖鐗规畩鏍囪锛屽憡鐭ュ墠绔暣涓瑪璁板凡琚垹闄?
 						return jsonResponse({ success: true, noteDeleted: true });
 					}
-					// 处理新附件上传
+					// 澶勭悊鏂伴檮浠朵笂浼?
 					const newFiles = formData.getAll('file');
 					const videoUrls = [];
 					for (const file of newFiles) {
@@ -777,10 +799,10 @@ async function handleNoteDetail(request, noteId, env) {
 						}
 					}
 
-					// 在更新数据库前，提取新的图片 URL 列表
+					// 鍦ㄦ洿鏂版暟鎹簱鍓嶏紝鎻愬彇鏂扮殑鍥剧墖 URL 鍒楄〃
 					const picUrls = extractImageUrls(content);
 					const newTimestamp = shouldUpdateTimestamp ? Date.now() : existingNote.updated_at;
-					// 在 UPDATE 语句中加入 pics 字段的更新
+					// 鍦?UPDATE 璇彞涓姞鍏?pics 瀛楁鐨勬洿鏂?
 					const stmt = db.prepare(
 						"UPDATE notes SET content = ?, files = ?, updated_at = ?, pics = ?, videos = ? WHERE id = ?"
 					);
@@ -790,7 +812,7 @@ async function handleNoteDetail(request, noteId, env) {
 					await processNoteTags(db, id, content);
 				}
 
-				if (formData.has('isPinned')) { // --- 这是置顶状态的更新 ---
+				if (formData.has('isPinned')) { // --- 杩欐槸缃《鐘舵€佺殑鏇存柊 ---
 					const isPinned = formData.get('isPinned') === 'true' ? '1' : '0';
 					const stmt = db.prepare("UPDATE notes SET is_pinned = ? WHERE id = ?");
 					await stmt.bind(isPinned, id).run();
@@ -865,38 +887,38 @@ async function handleFileRequest(noteId, fileId, request, env) {
 		return new Response('Invalid Note ID', { status: 400 });
 	}
 
-	// 尝试从数据库获取元数据
+	// 灏濊瘯浠庢暟鎹簱鑾峰彇鍏冩暟鎹?
 	const note = await db.prepare("SELECT files FROM notes WHERE id = ?").bind(id).first();
 
-	// 【核心修改】即使 note 不存在或 files 为空，我们也不立即返回 404，
-	// 因为图片可能只记录在 pics 字段中。
+	// 銆愭牳蹇冧慨鏀广€戝嵆浣?note 涓嶅瓨鍦ㄦ垨 files 涓虹┖锛屾垜浠篃涓嶇珛鍗宠繑鍥?404锛?
+	// 鍥犱负鍥剧墖鍙兘鍙褰曞湪 pics 瀛楁涓€?
 
 	let files = [];
 	if (note && typeof note.files === 'string') {
 		try {
 			files = JSON.parse(note.files);
 		} catch (e) {
-			// JSON 解析失败则忽略
+			// JSON 瑙ｆ瀽澶辫触鍒欏拷鐣?
 		}
 	}
 
 	const fileMeta = files.find(f => f.id === fileId);
 
-	// 尝试从 R2 获取文件对象
+	// 灏濊瘯浠?R2 鑾峰彇鏂囦欢瀵硅薄
 	const object = await env.NOTES_R2_BUCKET.get(`${id}/${fileId}`);
 	if (object === null) {
-		// 如果 R2 中确实没有这个文件，才返回 404
+		// 濡傛灉 R2 涓‘瀹炴病鏈夎繖涓枃浠讹紝鎵嶈繑鍥?404
 		return new Response('File not found in storage', { status: 404 });
 	}
 
 	const headers = new Headers();
-	object.writeHttpMetadata(headers); // 从 R2 对象中写入元数据（如 Content-Type）
+	object.writeHttpMetadata(headers); // 浠?R2 瀵硅薄涓啓鍏ュ厓鏁版嵁锛堝 Content-Type锛?
 	headers.set('etag', object.httpEtag);
 	headers.set('Cache-Control', 'public, max-age=86400, immutable');
 
-	// --- 根据是否存在 fileMeta 来决定如何设置 headers ---
+	// --- 鏍规嵁鏄惁瀛樺湪 fileMeta 鏉ュ喅瀹氬浣曡缃?headers ---
 	if (fileMeta) {
-		// 【情况一：元数据存在】这是标准文件或旧的图片，按原逻辑处理
+		// 銆愭儏鍐典竴锛氬厓鏁版嵁瀛樺湪銆戣繖鏄爣鍑嗘枃浠舵垨鏃х殑鍥剧墖锛屾寜鍘熼€昏緫澶勭悊
 		const contentType = fileMeta.type || 'application/octet-stream';
 		const fileExtension = fileMeta.name.split('.').pop().toLowerCase();
 		const textLikeExtensions = ['yml', 'yaml', 'md', 'log', 'toml', 'sh', 'py', 'js', 'json', 'css', 'html'];
@@ -911,32 +933,32 @@ async function handleFileRequest(noteId, fileId, request, env) {
 		const disposition = isPreview ? 'inline' : 'attachment';
 		headers.set('Content-Disposition', `${disposition}; filename="${encodeURIComponent(fileMeta.name)}"`);
 	} else {
-		// 【情况二：元数据不存在】这是新的 Telegram 图片，我们只确保它能被浏览器正确显示
-		// Content-Type 已经通过 object.writeHttpMetadata(headers) 从 R2 中设置好了，
-		// 这通常足够让浏览器正确渲染图片。
-		// 我们将其设置为 inline，确保它在 <img> 标签中能显示而不是被下载。
+		// 銆愭儏鍐典簩锛氬厓鏁版嵁涓嶅瓨鍦ㄣ€戣繖鏄柊鐨?Telegram 鍥剧墖锛屾垜浠彧纭繚瀹冭兘琚祻瑙堝櫒姝ｇ‘鏄剧ず
+		// Content-Type 宸茬粡閫氳繃 object.writeHttpMetadata(headers) 浠?R2 涓缃ソ浜嗭紝
+		// 杩欓€氬父瓒冲璁╂祻瑙堝櫒姝ｇ‘娓叉煋鍥剧墖銆?
+		// 鎴戜滑灏嗗叾璁剧疆涓?inline锛岀‘淇濆畠鍦?<img> 鏍囩涓兘鏄剧ず鑰屼笉鏄涓嬭浇銆?
 		headers.set('Content-Disposition', 'inline');
 	}
 
 	return new Response(object.body, { headers });
 }
 /**
- *  将 Telegram 的格式化实体 (entities) 转换为 Markdown 文本
+ *  灏?Telegram 鐨勬牸寮忓寲瀹炰綋 (entities) 杞崲涓?Markdown 鏂囨湰
  *
- * @param {string} text 原始文本
- * @param {Array<object>} entities 从 Telegram API 收到的标签数组。
- * @returns {string} 格式化后的、高度兼容的 Markdown 文本。
+ * @param {string} text 鍘熷鏂囨湰
+ * @param {Array<object>} entities 浠?Telegram API 鏀跺埌鐨勬爣绛炬暟缁勩€?
+ * @returns {string} 鏍煎紡鍖栧悗鐨勩€侀珮搴﹀吋瀹圭殑 Markdown 鏂囨湰銆?
  */
 function telegramEntitiesToMarkdown(text, entities = []) {
 	if (!entities || entities.length === 0) {
 		return text;
 	}
 
-	// 优先级决定了标签的嵌套顺序。数字越小，越在外层。
+	// 浼樺厛绾у喅瀹氫簡鏍囩鐨勫祵濂楅『搴忋€傛暟瀛楄秺灏忥紝瓒婂湪澶栧眰銆?
 	const tagPriority = {
 		'text_link': 10,
 		'bold': 20,
-		'italic': 30, // 使用 _ 作为斜体标记，避免与 ** 的 * 冲突
+		'italic': 30, // 浣跨敤 _ 浣滀负鏂滀綋鏍囪锛岄伩鍏嶄笌 ** 鐨?* 鍐茬獊
 		'underline': 40,
 		'strikethrough': 50,
 		'spoiler': 60,
@@ -981,21 +1003,21 @@ function telegramEntitiesToMarkdown(text, entities = []) {
 			continue;
 		}
 		result += text.substring(lastIndex, i);
-		//   - 闭合标签按优先级从高到低（内层先关）
-		//   - 起始标签按优先级从低到高（外层先开）
+		//   - 闂悎鏍囩鎸変紭鍏堢骇浠庨珮鍒颁綆锛堝唴灞傚厛鍏筹級
+		//   - 璧峰鏍囩鎸変紭鍏堢骇浠庝綆鍒伴珮锛堝灞傚厛寮€锛?
 		const closeTags = mod.closeTags.sort((a, b) => b.priority - a.priority);
 		const openTags = mod.openTags.sort((a, b) => a.priority - b.priority);
 
 		closeTags.forEach(({ tag }) => {
 			if (adjacentSensitiveTags.includes(tag) && result.endsWith(tag)) {
-				result += '\u200B'; // 插入零宽度空格
+				result += '\u200B'; // 鎻掑叆闆跺搴︾┖鏍?
 			}
 			result += tag;
 		});
 
 		openTags.forEach(({ tag }) => {
 			if (adjacentSensitiveTags.includes(tag) && result.endsWith(tag)) {
-				result += '\u200B'; // 插入零宽度空格
+				result += '\u200B'; // 鎻掑叆闆跺搴︾┖鏍?
 			}
 			result += tag;
 		});
@@ -1016,8 +1038,8 @@ function telegramEntitiesToMarkdown(text, entities = []) {
 }
 
 /**
- * 代理 Telegram 媒体文件请求。
- * 接收一个 file_id，实时获取临时下载链接并重定向用户。
+ * 浠ｇ悊 Telegram 濯掍綋鏂囦欢璇锋眰銆?
+ * 鎺ユ敹涓€涓?file_id锛屽疄鏃惰幏鍙栦复鏃朵笅杞介摼鎺ュ苟閲嶅畾鍚戠敤鎴枫€?
  */
 async function handleTelegramProxy(request, env) {
 	const { pathname } = new URL(request.url);
@@ -1036,7 +1058,7 @@ async function handleTelegramProxy(request, env) {
 	}
 
 	try {
-		// 1. 调用 getFile API
+		// 1. 璋冪敤 getFile API
 		const getFileUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${fileId}`;
 		const fileInfoRes = await fetch(getFileUrl);
 		const fileInfo = await fileInfoRes.json();
@@ -1046,10 +1068,10 @@ async function handleTelegramProxy(request, env) {
 			return new Response(`Telegram API error: ${fileInfo.description}`, { status: 502 }); // 502 Bad Gateway
 		}
 
-		// 2. 构建临时的下载链接
+		// 2. 鏋勫缓涓存椂鐨勪笅杞介摼鎺?
 		const temporaryDownloadUrl = `https://api.telegram.org/file/bot${botToken}/${fileInfo.result.file_path}`;
 
-		// 3. 返回 302 重定向
+		// 3. 杩斿洖 302 閲嶅畾鍚?
 		return Response.redirect(temporaryDownloadUrl, 302);
 
 	} catch (e) {
@@ -1059,9 +1081,9 @@ async function handleTelegramProxy(request, env) {
 }
 
 /**
- * - 处理来自 Telegram Bot 的 Webhook 请求
- * - 视频：保存 file_id，并在正文中嵌入指向 Worker 代理的链接，实现动态播放。
- * - 图片/文件：仍然二次上传到 R2，保证永久可用。
+ * - 澶勭悊鏉ヨ嚜 Telegram Bot 鐨?Webhook 璇锋眰
+ * - 瑙嗛锛氫繚瀛?file_id锛屽苟鍦ㄦ鏂囦腑宓屽叆鎸囧悜 Worker 浠ｇ悊鐨勯摼鎺ワ紝瀹炵幇鍔ㄦ€佹挱鏀俱€?
+ * - 鍥剧墖/鏂囦欢锛氫粛鐒朵簩娆′笂浼犲埌 R2锛屼繚璇佹案涔呭彲鐢ㄣ€?
  */
 async function handleTelegramWebhook(request, env, secret) {
 	if (!env.TELEGRAM_WEBHOOK_SECRET || secret !== env.TELEGRAM_WEBHOOK_SECRET) {
@@ -1078,13 +1100,13 @@ async function handleTelegramWebhook(request, env, secret) {
 
 		const authorizedIdsStr = env.AUTHORIZED_TELEGRAM_IDS;
 		if (!authorizedIdsStr) {
-			console.error("安全警告：AUTHORIZED_TELEGRAM_IDS 环境变量未设置。");
+			console.error("瀹夊叏璀﹀憡锛欰UTHORIZED_TELEGRAM_IDS 鐜鍙橀噺鏈缃€?);
 			return new Response('OK', { status: 200 });
 		}
 		chatId = message.chat.id;
 		const senderId = message.from?.id;
 		if (!senderId || authorizedIdsStr != senderId.toString()) {
-			console.log(`已阻止来自未授权或未知用户 ${senderId || ''} 的请求。`);
+			console.log(`宸查樆姝㈡潵鑷湭鎺堟潈鎴栨湭鐭ョ敤鎴?${senderId || ''} 鐨勮姹傘€俙);
 			return new Response('OK', { status: 200 });
 		}
 
@@ -1147,43 +1169,43 @@ async function handleTelegramWebhook(request, env, secret) {
 		const insertStmt = db.prepare("INSERT INTO notes (content, files, is_pinned, created_at, updated_at, pics, videos) VALUES (?, ?, 0, ?, ?, ?, ?) RETURNING id");
 		const { id: noteId } = await insertStmt.bind('', '[]', now, now, '[]', '[]').first();
 		if (!noteId) {
-			throw new Error("无法在数据库中创建笔记记录。");
+			throw new Error("鏃犳硶鍦ㄦ暟鎹簱涓垱寤虹瑪璁拌褰曘€?);
 		}
 
-		// 图片处理（保持二次上传）
+		// 鍥剧墖澶勭悊锛堜繚鎸佷簩娆′笂浼狅級
 		if (photo) {
 			const getFileUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${photo.file_id}`;
 			const fileInfoRes = await fetch(getFileUrl);
 			const fileInfo = await fileInfoRes.json();
-			if (!fileInfo.ok) throw new Error(`Telegram getFile API 错误 (photo): ${fileInfo.description}`);
+			if (!fileInfo.ok) throw new Error(`Telegram getFile API 閿欒 (photo): ${fileInfo.description}`);
 			const filePath = fileInfo.result.file_path;
 			const fileName = `photo_${message.message_id}.${(filePath.split('.').pop() || 'jpg')}`;
 			const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
 			const fileRes = await fetch(downloadUrl);
-			if (!fileRes.ok) throw new Error("从 Telegram 下载图片失败。");
+			if (!fileRes.ok) throw new Error("浠?Telegram 涓嬭浇鍥剧墖澶辫触銆?);
 			const fileId = crypto.randomUUID();
 			await bucket.put(`${noteId}/${fileId}`, fileRes.body);
 			const internalFileUrl = `/api/files/${noteId}/${fileId}`;
 
-			picObjects.push(internalFileUrl); // 为了兼容性，图片直接存 URL 字符串
+			picObjects.push(internalFileUrl); // 涓轰簡鍏煎鎬э紝鍥剧墖鐩存帴瀛?URL 瀛楃涓?
 			mediaEmbeds.push(`![${fileName}](${internalFileUrl})`);
 		}
 
 		if (video) {
 			if (settings.telegramProxy) {
-				// --- 代理模式 ---
+				// --- 浠ｇ悊妯″紡 ---
 				const proxyUrl = `/api/tg-media-proxy/${video.file_id}`;
 				videoObjects.push(proxyUrl);
 				mediaEmbeds.push(`<video src="${proxyUrl}" width="100%" controls muted></video>`);
 			} else {
-				// --- 二次上传模式 ---
+				// --- 浜屾涓婁紶妯″紡 ---
 				const getFileUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${video.file_id}`;
 				const fileInfoRes = await fetch(getFileUrl);
 				const fileInfo = await fileInfoRes.json();
-				if (!fileInfo.ok) throw new Error(`Telegram getFile API 错误 (video): ${fileInfo.description}`);
+				if (!fileInfo.ok) throw new Error(`Telegram getFile API 閿欒 (video): ${fileInfo.description}`);
 				const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${fileInfo.result.file_path}`;
 				const fileRes = await fetch(downloadUrl);
-				if (!fileRes.ok) throw new Error("从 Telegram 下载视频失败。");
+				if (!fileRes.ok) throw new Error("浠?Telegram 涓嬭浇瑙嗛澶辫触銆?);
 				const fileId = crypto.randomUUID();
 				await bucket.put(`${noteId}/${fileId}`, fileRes.body);
 				const internalFileUrl = `/api/files/${noteId}/${fileId}`;
@@ -1192,28 +1214,28 @@ async function handleTelegramWebhook(request, env, secret) {
 			}
 		}
 
-		// 文件处理（根据设置决定模式）
+		// 鏂囦欢澶勭悊锛堟牴鎹缃喅瀹氭ā寮忥級
 		if (document) {
 			if (settings.telegramProxy) {
-				// --- 代理模式 ---
-				// 注意：代理文件时，我们无法在笔记中直接展示它，只能存一个元信息
+				// --- 浠ｇ悊妯″紡 ---
+				// 娉ㄦ剰锛氫唬鐞嗘枃浠舵椂锛屾垜浠棤娉曞湪绗旇涓洿鎺ュ睍绀哄畠锛屽彧鑳藉瓨涓€涓厓淇℃伅
 				filesMeta.push({
-					type: 'telegram_document', // 特殊类型
+					type: 'telegram_document', // 鐗规畩绫诲瀷
 					file_id: document.file_id,
 					name: document.file_name,
 					size: document.file_size
 				});
-				// 可以在正文加一个占位符，但这需要前端支持渲染
+				// 鍙互鍦ㄦ鏂囧姞涓€涓崰浣嶇锛屼絾杩欓渶瑕佸墠绔敮鎸佹覆鏌?
 				// finalContent += `\n\n[Proxy File: ${document.file_name}]`;
 			} else {
-				// --- 二次上传模式 ---
+				// --- 浜屾涓婁紶妯″紡 ---
 				const getFileUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${document.file_id}`;
 				const fileInfoRes = await fetch(getFileUrl);
 				const fileInfo = await fileInfoRes.json();
-				if (!fileInfo.ok) throw new Error(`Telegram getFile API 错误 (document): ${fileInfo.description}`);
+				if (!fileInfo.ok) throw new Error(`Telegram getFile API 閿欒 (document): ${fileInfo.description}`);
 				const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${fileInfo.result.file_path}`;
 				const fileRes = await fetch(downloadUrl);
-				if (!fileRes.ok) throw new Error("从 Telegram 下载文件失败。");
+				if (!fileRes.ok) throw new Error("浠?Telegram 涓嬭浇鏂囦欢澶辫触銆?);
 				const fileId = crypto.randomUUID();
 				await bucket.put(`${noteId}/${fileId}`, fileRes.body);
 				filesMeta.push({
@@ -1238,33 +1260,33 @@ async function handleTelegramWebhook(request, env, secret) {
 			finalContent,
 			JSON.stringify(filesMeta),
 			JSON.stringify(picObjects),
-			JSON.stringify(videoObjects), // [新增] 绑定 videoObjects
+			JSON.stringify(videoObjects), // [鏂板] 缁戝畾 videoObjects
 			noteId
 		).run();
 
 		await processNoteTags(db, noteId, finalContent);
-		await sendTelegramMessage(chatId, `✅ 笔记已保存！ (ID: ${noteId})`, botToken);
+		await sendTelegramMessage(chatId, `鉁?绗旇宸蹭繚瀛橈紒 (ID: ${noteId})`, botToken);
 
 	} catch (e) {
 		console.error("Telegram Webhook Error:", e.message);
 		if (chatId && botToken) {
-			await sendTelegramMessage(chatId, `❌ 保存笔记时出错: ${e.message}`, botToken);
+			await sendTelegramMessage(chatId, `鉂?淇濆瓨绗旇鏃跺嚭閿? ${e.message}`, botToken);
 		}
 	}
 	return new Response('OK', { status: 200 });
 }
 /**
- * 发送消息到指定的 Telegram 聊天
- * @param {string | number} chatId 聊天 ID
- * @param {string} text 要发送的文本
- * @param {string} botToken 机器人 Token
+ * 鍙戦€佹秷鎭埌鎸囧畾鐨?Telegram 鑱婂ぉ
+ * @param {string | number} chatId 鑱婂ぉ ID
+ * @param {string} text 瑕佸彂閫佺殑鏂囨湰
+ * @param {string} botToken 鏈哄櫒浜?Token
  */
 async function sendTelegramMessage(chatId, text, botToken) {
 	const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
 	const payload = {
 		chat_id: chatId,
 		text: text,
-		parse_mode: 'Markdown' // 也可以使用 'HTML'
+		parse_mode: 'Markdown' // 涔熷彲浠ヤ娇鐢?'HTML'
 	};
 
 	try {
@@ -1286,47 +1308,47 @@ async function sendTelegramMessage(chatId, text, botToken) {
 
 
 function extractImageUrls(content) {
-	// 正则表达式：全局匹配所有 Markdown 图片语法 ![alt](url)
-	// 关键点：
-	// 1. /g flag - 确保能找到文中所有的图片，而不仅仅是第一个
-	// 2. \!\[.*?\] - 非贪婪地匹配 alt 文本部分，处理各种复杂的 alt 内容
-	// 3. \((.*?)\) - 捕获组( ... )，非贪婪地捕获括号内的 URL
+	// 姝ｅ垯琛ㄨ揪寮忥細鍏ㄥ眬鍖归厤鎵€鏈?Markdown 鍥剧墖璇硶 ![alt](url)
+	// 鍏抽敭鐐癸細
+	// 1. /g flag - 纭繚鑳芥壘鍒版枃涓墍鏈夌殑鍥剧墖锛岃€屼笉浠呬粎鏄涓€涓?
+	// 2. \!\[.*?\] - 闈炶椽濠湴鍖归厤 alt 鏂囨湰閮ㄥ垎锛屽鐞嗗悇绉嶅鏉傜殑 alt 鍐呭
+	// 3. \((.*?)\) - 鎹曡幏缁? ... )锛岄潪璐┆鍦版崟鑾锋嫭鍙峰唴鐨?URL
 	const regex = /!\[.*?\]\((.*?)\)/g;
 
-	// 使用 String.prototype.matchAll() 来获取所有匹配项和捕获组
-	// 它返回一个迭代器，我们用 Array.from 将其转换为数组
+	// 浣跨敤 String.prototype.matchAll() 鏉ヨ幏鍙栨墍鏈夊尮閰嶉」鍜屾崟鑾风粍
+	// 瀹冭繑鍥炰竴涓凯浠ｅ櫒锛屾垜浠敤 Array.from 灏嗗叾杞崲涓烘暟缁?
 	const matches = Array.from(content.matchAll(regex));
 
-	// 提取每个匹配项的第一个捕获组（也就是 URL）
+	// 鎻愬彇姣忎釜鍖归厤椤圭殑绗竴涓崟鑾风粍锛堜篃灏辨槸 URL锛?
 	const urls = matches.map(match => match[1]);
 
-	// 返回一个 JSON 字符串数组，以便直接存入 D1 的 TEXT 字段
+	// 杩斿洖涓€涓?JSON 瀛楃涓叉暟缁勶紝浠ヤ究鐩存帴瀛樺叆 D1 鐨?TEXT 瀛楁
 	return JSON.stringify(urls);
 }
 /**
- * 处理笔记的标签逻辑，过滤掉 URL 中的 #
+ * 澶勭悊绗旇鐨勬爣绛鹃€昏緫锛岃繃婊ゆ帀 URL 涓殑 #
  */
 async function processNoteTags(db, noteId, content) {
 	const plainTextContent = content.replace(/<[^>]*>/g, '');
-	// 1. 定义两个正则表达式：一个用于标签，一个用于 URL
+	// 1. 瀹氫箟涓や釜姝ｅ垯琛ㄨ揪寮忥細涓€涓敤浜庢爣绛撅紝涓€涓敤浜?URL
 	const tagRegex = /#([\p{L}\p{N}_-]+)/gu;
 	const urlRegex = /(https?:\/\/[^\s"']*[^\s"'.?,!])/g;
 
-	// 2. 将内容分割成“普通文本”和“链接文本”的交替数组
+	// 2. 灏嗗唴瀹瑰垎鍓叉垚鈥滄櫘閫氭枃鏈€濆拰鈥滈摼鎺ユ枃鏈€濈殑浜ゆ浛鏁扮粍
 	const segments = plainTextContent.split(urlRegex);
 	let allTags = [];
 
-	// 3. 遍历所有片段
+	// 3. 閬嶅巻鎵€鏈夌墖娈?
 	segments.forEach(segment => {
-		// 4. 关键：只在【非链接】的文本片段中查找标签
-		//    我们通过重新测试来判断它是否是 URL
+		// 4. 鍏抽敭锛氬彧鍦ㄣ€愰潪閾炬帴銆戠殑鏂囨湰鐗囨涓煡鎵炬爣绛?
+		//    鎴戜滑閫氳繃閲嶆柊娴嬭瘯鏉ュ垽鏂畠鏄惁鏄?URL
 		if (!/^(https?:\/\/[^\s"']*[^\s"'.?,!])/.test(segment)) {
 			const matchedInSegment = [...segment.matchAll(tagRegex)].map(match => match[1].toLowerCase());
 			allTags.push(...matchedInSegment);
 		}
 	});
 
-	// 5. 将从所有安全片段中找到的标签进行去重
+	// 5. 灏嗕粠鎵€鏈夊畨鍏ㄧ墖娈典腑鎵惧埌鐨勬爣绛捐繘琛屽幓閲?
 	const uniqueTags = [...new Set(allTags)];
 
 	const statements = [];
@@ -1349,8 +1371,8 @@ async function processNoteTags(db, noteId, content) {
 	}
 }
 /**
- * 处理独立的图片上传请求 (从粘贴操作)
- * 将图片存入 R2 的一个通用 'uploads' 文件夹中
+ * 澶勭悊鐙珛鐨勫浘鐗囦笂浼犺姹?(浠庣矘璐存搷浣?
+ * 灏嗗浘鐗囧瓨鍏?R2 鐨勪竴涓€氱敤 'uploads' 鏂囦欢澶逛腑
  */
 async function handleStandaloneImageUpload(request, env) {
 	try {
@@ -1362,16 +1384,16 @@ async function handleStandaloneImageUpload(request, env) {
 		}
 
 		const imageId = crypto.randomUUID();
-		// 我们将独立上传的图片统一放到一个 'uploads/' 目录下，与笔记附件分开
+		// 鎴戜滑灏嗙嫭绔嬩笂浼犵殑鍥剧墖缁熶竴鏀惧埌涓€涓?'uploads/' 鐩綍涓嬶紝涓庣瑪璁伴檮浠跺垎寮€
 		const r2Key = `uploads/${imageId}`;
 
-		// 将文件流上传到 R2
+		// 灏嗘枃浠舵祦涓婁紶鍒?R2
 		await env.NOTES_R2_BUCKET.put(r2Key, file.stream(), {
 			httpMetadata: { contentType: file.type },
 		});
 
-		// 返回一个可用于访问此图片的内部 URL
-		// 这个 URL 对应我们下面创建的 handleServeStandaloneImage 函数的路由
+		// 杩斿洖涓€涓彲鐢ㄤ簬璁块棶姝ゅ浘鐗囩殑鍐呴儴 URL
+		// 杩欎釜 URL 瀵瑰簲鎴戜滑涓嬮潰鍒涘缓鐨?handleServeStandaloneImage 鍑芥暟鐨勮矾鐢?
 		const imageUrl = `/api/images/${imageId}`;
 		return jsonResponse({ success: true, url: imageUrl });
 
@@ -1382,18 +1404,18 @@ async function handleStandaloneImageUpload(request, env) {
 }
 
 /**
- * 通过 Worker 代理上传图片到 Imgur
+ * 閫氳繃 Worker 浠ｇ悊涓婁紶鍥剧墖鍒?Imgur
  */
 async function handleImgurProxyUpload(request, env) {
 	try {
 		const formData = await request.formData();
-		// 【注意】从前端获取 Client ID，而不是硬编码在后端
+		// 銆愭敞鎰忋€戜粠鍓嶇鑾峰彇 Client ID锛岃€屼笉鏄‖缂栫爜鍦ㄥ悗绔?
 		const clientId = formData.get('clientId');
 		if (!clientId) {
 			return jsonResponse({ error: 'Imgur Client ID is required.' }, 400);
 		}
 
-		// Imgur 需要 'image' 字段
+		// Imgur 闇€瑕?'image' 瀛楁
 		const imageFile = formData.get('file');
 		const imgurFormData = new FormData();
 		imgurFormData.append('image', imageFile);
@@ -1429,11 +1451,11 @@ async function handleGetAllAttachments(request, env) {
 	const db = env.DB;
 	const url = new URL(request.url);
 	const page = parseInt(url.searchParams.get('page') || '1');
-	const limit = 20; // 每次加载20条附件
+	const limit = 20; // 姣忔鍔犺浇20鏉￠檮浠?
 	const offset = (page - 1) * limit;
 
 	try {
-		// 使用 Common Table Expression (CTE) 和 UNION ALL 来构建一个高效的单一查询
+		// 浣跨敤 Common Table Expression (CTE) 鍜?UNION ALL 鏉ユ瀯寤轰竴涓珮鏁堢殑鍗曚竴鏌ヨ
 		const query = `
             WITH combined_attachments AS (
                 SELECT
@@ -1478,7 +1500,7 @@ async function handleGetAllAttachments(request, env) {
             LIMIT ? OFFSET ?;
         `;
 
-		// 为了判断是否有更多页面，我们请求 limit + 1 条记录
+		// 涓轰簡鍒ゆ柇鏄惁鏈夋洿澶氶〉闈紝鎴戜滑璇锋眰 limit + 1 鏉¤褰?
 		const stmt = db.prepare(query);
 		const { results: attachmentsPlusOne } = await stmt.bind(limit + 1, offset).all();
 
@@ -1497,7 +1519,7 @@ async function handleGetAllAttachments(request, env) {
 }
 
 /**
- * 根据 ID 从 R2 中提供（服务）一个独立上传的图片
+ * 鏍规嵁 ID 浠?R2 涓彁渚涳紙鏈嶅姟锛変竴涓嫭绔嬩笂浼犵殑鍥剧墖
  * @param {string} imageId The UUID of the image.
  * @param {object} env The Worker environment/bindings.
  * @returns {Promise<Response>}
@@ -1513,7 +1535,7 @@ async function handleServeStandaloneImage(imageId, env) {
 	const headers = new Headers();
 	object.writeHttpMetadata(headers);
 	headers.set('etag', object.httpEtag);
-	// 设置长时间的浏览器缓存，因为这些图片内容是不可变的
+	// 璁剧疆闀挎椂闂寸殑娴忚鍣ㄧ紦瀛橈紝鍥犱负杩欎簺鍥剧墖鍐呭鏄笉鍙彉鐨?
 	headers.set('Cache-Control', 'public, max-age=31536000, immutable');
 
 	return new Response(object.body, { headers });
@@ -1521,10 +1543,10 @@ async function handleServeStandaloneImage(imageId, env) {
 
 
 /**
- * 从扁平的节点列表中构建层级树结构
- * @param {Array<object>} nodes - 从数据库查询出的节点数组
- * @param {string|null} parentId - 当前要查找的父节点ID
- * @returns {Array<object>} - 构建好的层级树数组
+ * 浠庢墎骞崇殑鑺傜偣鍒楄〃涓瀯寤哄眰绾ф爲缁撴瀯
+ * @param {Array<object>} nodes - 浠庢暟鎹簱鏌ヨ鍑虹殑鑺傜偣鏁扮粍
+ * @param {string|null} parentId - 褰撳墠瑕佹煡鎵剧殑鐖惰妭鐐笽D
+ * @returns {Array<object>} - 鏋勫缓濂界殑灞傜骇鏍戞暟缁?
  */
 function buildTree(nodes, parentId = null) {
 	const tree = [];
@@ -1541,7 +1563,7 @@ function buildTree(nodes, parentId = null) {
 }
 
 /**
- * GET /api/docs/tree - 获取所有文档节点并返回树状结构
+ * GET /api/docs/tree - 鑾峰彇鎵€鏈夋枃妗ｈ妭鐐瑰苟杩斿洖鏍戠姸缁撴瀯
  */
 async function handleDocsTree(request, env) {
 	try {
@@ -1556,7 +1578,7 @@ async function handleDocsTree(request, env) {
 }
 
 /**
- * GET /api/docs/node/:id - 获取单个文档节点的内容
+ * GET /api/docs/node/:id - 鑾峰彇鍗曚釜鏂囨。鑺傜偣鐨勫唴瀹?
  */
 async function handleDocsNodeGet(request, nodeId, env) {
 	try {
@@ -1573,16 +1595,16 @@ async function handleDocsNodeGet(request, nodeId, env) {
 }
 
 /**
- * 从 HTML 内容中提取第一个标题作为文档名称
+ * 浠?HTML 鍐呭涓彁鍙栫涓€涓爣棰樹綔涓烘枃妗ｅ悕绉?
  */
 function extractTitleFromContent(content) {
 	if (!content) return null;
-	// 尝试匹配 HTML 中的 h1
+	// 灏濊瘯鍖归厤 HTML 涓殑 h1
 	const h1Match = content.match(/<h1[^>]*>(.*?)<\/h1>/i);
 	if (h1Match) {
 		return h1Match[1].replace(/<[^>]*>/g, '').trim();
 	}
-	// 尝试匹配 Markdown 标题
+	// 灏濊瘯鍖归厤 Markdown 鏍囬
 	const mdMatch = content.match(/^#\s+(.+)/m);
 	if (mdMatch) {
 		return mdMatch[1].trim();
@@ -1591,13 +1613,13 @@ function extractTitleFromContent(content) {
 }
 
 /**
- * PUT /api/docs/node/:id - 更新（保存）一个文档节点的内容，同时自动同步标题
+ * PUT /api/docs/node/:id - 鏇存柊锛堜繚瀛橈級涓€涓枃妗ｈ妭鐐圭殑鍐呭锛屽悓鏃惰嚜鍔ㄥ悓姝ユ爣棰?
  */
 async function handleDocsNodeUpdate(request, nodeId, env) {
 	try {
 		const { content } = await request.json();
 		const now = Date.now();
-		// 从内容中提取标题，同步更新 title 字段
+		// 浠庡唴瀹逛腑鎻愬彇鏍囬锛屽悓姝ユ洿鏂?title 瀛楁
 		const title = extractTitleFromContent(content);
 		if (title) {
 			const stmt = env.DB.prepare("UPDATE nodes SET content = ?, title = ?, updated_at = ? WHERE id = ?");
@@ -1614,11 +1636,11 @@ async function handleDocsNodeUpdate(request, nodeId, env) {
 }
 
 /**
- * POST /api/docs/node - 创建一个新的文档节点（文件或目录）
+ * POST /api/docs/node - 鍒涘缓涓€涓柊鐨勬枃妗ｈ妭鐐癸紙鏂囦欢鎴栫洰褰曪級
  */
 async function handleDocsNodeCreate(request, env) {
 	try {
-		// 修复：前端可能传 null，统一转为 "0"
+		// 淇锛氬墠绔彲鑳戒紶 null锛岀粺涓€杞负 "0"
 		const { type, title, parent_id } = await request.json();
 		const safeParentId = parent_id ?? "0";
 		if (!type || !title || !['file', 'folder'].includes(type)) {
@@ -1671,21 +1693,21 @@ async function getAllDescendantIds(db, parentId) {
 // DELETE and REMOVE the entire `getAllDescendantIds` function.
 
 /**
- * DELETE /api/docs/node/:id - 删除一个节点。
- * 数据库的 "ON DELETE CASCADE" 约束会自动处理所有子节点的删除。
+ * DELETE /api/docs/node/:id - 鍒犻櫎涓€涓妭鐐广€?
+ * 鏁版嵁搴撶殑 "ON DELETE CASCADE" 绾︽潫浼氳嚜鍔ㄥ鐞嗘墍鏈夊瓙鑺傜偣鐨勫垹闄ゃ€?
  */
 async function handleDocsNodeDelete(request, nodeId, env) {
 	const db = env.DB;
 	try {
 		const nodeToDelete = await db.prepare("SELECT id FROM nodes WHERE id = ?").bind(nodeId).first();
 		if (!nodeToDelete) {
-			return jsonResponse({ error: "节点未找到。" }, 404);
+			return jsonResponse({ error: "鑺傜偣鏈壘鍒般€? }, 404);
 		}
 
-		// 只需要删除这一个节点，数据库会自动删除所有子孙节点。
+		// 鍙渶瑕佸垹闄よ繖涓€涓妭鐐癸紝鏁版嵁搴撲細鑷姩鍒犻櫎鎵€鏈夊瓙瀛欒妭鐐广€?
 		await db.prepare("DELETE FROM nodes WHERE id = ?").bind(nodeId).run();
 
-		// 我们不再需要返回所有被删除的子节点ID，因为前端逻辑也不依赖它。
+		// 鎴戜滑涓嶅啀闇€瑕佽繑鍥炴墍鏈夎鍒犻櫎鐨勫瓙鑺傜偣ID锛屽洜涓哄墠绔€昏緫涔熶笉渚濊禆瀹冦€?
 		return jsonResponse({ success: true, deletedIds: [nodeId] });
 
 	} catch (e) {
@@ -1698,7 +1720,7 @@ async function handleDocsNodeMove(request, nodeId, env) {
 	const db = env.DB;
 	try {
 		let { new_parent_id } = await request.json();
-		// 修复：前端传 null 统一替换为 "0"
+		// 淇锛氬墠绔紶 null 缁熶竴鏇挎崲涓?"0"
 		if (new_parent_id === null || new_parent_id === undefined) {
 			new_parent_id = "0";
 		}
@@ -1754,7 +1776,7 @@ async function handleDocsNodeRename(request, nodeId, env) {
 	try {
 		const { new_title } = await request.json();
 
-		// 验证 new_title 是否存在且不为空
+		// 楠岃瘉 new_title 鏄惁瀛樺湪涓斾笉涓虹┖
 		if (!new_title || typeof new_title !== 'string' || new_title.trim() === '') {
 			return jsonResponse({ error: "A valid new title is required." }, 400);
 		}
@@ -1770,7 +1792,7 @@ async function handleDocsNodeRename(request, nodeId, env) {
 }
 
 /**
- * 为文件生成一个唯一的、可公开访问的链接。
+ * 涓烘枃浠剁敓鎴愪竴涓敮涓€鐨勩€佸彲鍏紑璁块棶鐨勯摼鎺ャ€?
  * POST /api/notes/:noteId/files/:fileId/share
  */
 async function handleShareFileRequest(noteId, fileId, request, env) {
@@ -1803,7 +1825,7 @@ async function handleShareFileRequest(noteId, fileId, request, env) {
 
 		if (!publicId) {
 			publicId = crypto.randomUUID();
-			// 1. 在 KV 中存储映射关系，用于快速、免认证的查找
+			// 1. 鍦?KV 涓瓨鍌ㄦ槧灏勫叧绯伙紝鐢ㄤ簬蹇€熴€佸厤璁よ瘉鐨勬煡鎵?
 			await env.NOTES_KV.put(`public_file:${publicId}`, JSON.stringify({
 				noteId: id,
 				fileId: file.id,
@@ -1811,7 +1833,7 @@ async function handleShareFileRequest(noteId, fileId, request, env) {
 				contentType: file.type
 			}));
 
-			// 2. 将 public_id 持久化到 D1 数据库中
+			// 2. 灏?public_id 鎸佷箙鍖栧埌 D1 鏁版嵁搴撲腑
 			files[fileIndex].public_id = publicId;
 			await db.prepare("UPDATE notes SET files = ? WHERE id = ?").bind(JSON.stringify(files), id).run();
 		}
@@ -1827,9 +1849,9 @@ async function handleShareFileRequest(noteId, fileId, request, env) {
 }
 
 /**
- * 处理对公开文件链接的访问请求，无需身份验证。
+ * 澶勭悊瀵瑰叕寮€鏂囦欢閾炬帴鐨勮闂姹傦紝鏃犻渶韬唤楠岃瘉銆?
  * GET /api/public/file/:publicId
- * 现在能同时处理笔记附件和独立上传的图片。
+ * 鐜板湪鑳藉悓鏃跺鐞嗙瑪璁伴檮浠跺拰鐙珛涓婁紶鐨勫浘鐗囥€?
  */
 async function handlePublicFileRequest(publicId, request, env) {
 	const kvData = await env.NOTES_KV.get(`public_file:${publicId}`, 'json');
@@ -1842,12 +1864,12 @@ async function handlePublicFileRequest(publicId, request, env) {
 	let contentType;
 
 	if (kvData.standaloneImageId) {
-		// 1. 是独立上传的图片
+		// 1. 鏄嫭绔嬩笂浼犵殑鍥剧墖
 		object = await env.NOTES_R2_BUCKET.get(`uploads/${kvData.standaloneImageId}`);
 		fileName = kvData.fileName || `image_${kvData.standaloneImageId}.png`;
 		contentType = kvData.contentType || 'image/png';
 	} else if (kvData.noteId && kvData.fileId) {
-		// 2. 是笔记的附件
+		// 2. 鏄瑪璁扮殑闄勪欢
 		object = await env.NOTES_R2_BUCKET.get(`${kvData.noteId}/${kvData.fileId}`);
 		fileName = kvData.fileName;
 		contentType = kvData.contentType;
@@ -1876,9 +1898,9 @@ async function handlePublicFileRequest(publicId, request, env) {
 }
 
 /**
- * [认证] 处理创建或获取/更新 Memos 分享链接的请求
+ * [璁よ瘉] 澶勭悊鍒涘缓鎴栬幏鍙?鏇存柊 Memos 鍒嗕韩閾炬帴鐨勮姹?
  * POST /api/notes/:noteId/share
- * Body (可选):
+ * Body (鍙€?:
  * {
  *   "expirationTtl": 3600, // (in seconds) for initial creation or update
  *   "publicId": "some-uuid" // for updating TTL of an existing link
@@ -1892,13 +1914,13 @@ async function handleShareNoteRequest(noteId, request, env) {
 			const noteShareKey = `note_share:${noteId}`;
 			const publicMemoKey = `public_memo:${body.publicId}`;
 
-			// 为了安全，验证一下 publicId 是否真的属于这个 noteId
+			// 涓轰簡瀹夊叏锛岄獙璇佷竴涓?publicId 鏄惁鐪熺殑灞炰簬杩欎釜 noteId
 			const storedPublicId = await env.NOTES_KV.get(noteShareKey);
 			if (storedPublicId !== body.publicId) {
 				return jsonResponse({ error: 'Invalid public ID for this note.' }, 400);
 			}
 
-			// 获取旧值以便重新写入
+			// 鑾峰彇鏃у€间互渚块噸鏂板啓鍏?
 			const memoData = await env.NOTES_KV.get(publicMemoKey);
 			if (!memoData) {
 				return jsonResponse({ error: 'Share link not found or already expired.' }, 404);
@@ -1908,9 +1930,9 @@ async function handleShareNoteRequest(noteId, request, env) {
 			if (body.expirationTtl > 0) {
 				options.expirationTtl = body.expirationTtl;
 			}
-			// 如果 expirationTtl <= 0，则不设置 options.expirationTtl，KV 会将其视为永不过期
+			// 濡傛灉 expirationTtl <= 0锛屽垯涓嶈缃?options.expirationTtl锛孠V 浼氬皢鍏惰涓烘案涓嶈繃鏈?
 
-			// 使用新 TTL 重新写入两个键
+			// 浣跨敤鏂?TTL 閲嶆柊鍐欏叆涓や釜閿?
 			await Promise.all([
 				env.NOTES_KV.put(publicMemoKey, memoData, options),
 				env.NOTES_KV.put(noteShareKey, body.publicId, options)
@@ -1919,12 +1941,12 @@ async function handleShareNoteRequest(noteId, request, env) {
 			return jsonResponse({ success: true, message: 'Expiration updated.' });
 
 		} else {
-			// --- 创建或获取新链接 ---
+			// --- 鍒涘缓鎴栬幏鍙栨柊閾炬帴 ---
 			let publicId = await env.NOTES_KV.get(`note_share:${noteId}`);
 
 			if (!publicId) {
 				publicId = crypto.randomUUID();
-				// 默认过期时间为 1 小时 (3600 秒)
+				// 榛樿杩囨湡鏃堕棿涓?1 灏忔椂 (3600 绉?
 				const expirationTtl = (body.expirationTtl !== undefined) ? body.expirationTtl : 3600;
 				const options = {};
 				if (expirationTtl > 0) {
@@ -1941,7 +1963,7 @@ async function handleShareNoteRequest(noteId, request, env) {
 			const displayUrl = `${protocol}//${host}/share/${publicId}`;
 			const rawUrl = `${protocol}//${host}/api/public/note/raw/${publicId}`;
 
-			return jsonResponse({ displayUrl, rawUrl, publicId }); // 返回 publicId 以便前端更新
+			return jsonResponse({ displayUrl, rawUrl, publicId }); // 杩斿洖 publicId 浠ヤ究鍓嶇鏇存柊
 		}
 	} catch (e) {
 		console.error(`Share/Update Note Error (noteId: ${noteId}):`, e.message);
@@ -1950,7 +1972,7 @@ async function handleShareNoteRequest(noteId, request, env) {
 }
 
 /**
- * 处理取消 Memos 分享的请求
+ * 澶勭悊鍙栨秷 Memos 鍒嗕韩鐨勮姹?
  * DELETE /api/notes/:noteId/share
  */
 async function handleUnshareNoteRequest(noteId, env) {
@@ -1969,7 +1991,7 @@ async function handleUnshareNoteRequest(noteId, env) {
 	}
 }
 /**
- * 处理对单个分享 Memos 内容的请求
+ * 澶勭悊瀵瑰崟涓垎浜?Memos 鍐呭鐨勮姹?
  * GET /api/public/note/:publicId
  */
 async function handlePublicNoteRequest(publicId, env) {
@@ -1986,7 +2008,7 @@ async function handlePublicNoteRequest(publicId, env) {
 			return jsonResponse({ error: 'Shared note content not found' }, 404);
 		}
 
-		// --- 辅助函数：将任何私有 URL 转换为公开 URL ---
+		// --- 杈呭姪鍑芥暟锛氬皢浠讳綍绉佹湁 URL 杞崲涓哄叕寮€ URL ---
 		const createPublicUrlFor = async (privateUrl) => {
 			const fileMatch = privateUrl.match(/^\/api\/files\/(\d+)\/([a-zA-Z0-9-]+)$/);
 			const imageMatch = privateUrl.match(/^\/api\/images\/([a-zA-Z0-9-]+)$/);
@@ -2004,10 +2026,10 @@ async function handlePublicNoteRequest(publicId, env) {
 				return `/api/public/file/${newPublicId}`;
 			}
 
-			return privateUrl; // 如果不是私有链接，则原样返回
+			return privateUrl; // 濡傛灉涓嶆槸绉佹湁閾炬帴锛屽垯鍘熸牱杩斿洖
 		};
 
-		// 1. 处理笔记正文 `content` 中的内联图片和视频
+		// 1. 澶勭悊绗旇姝ｆ枃 `content` 涓殑鍐呰仈鍥剧墖鍜岃棰?
 		const urlRegex = /(\/api\/(?:files|images)\/[a-zA-Z0-9\/-]+)/g;
 		const matches = [...note.content.matchAll(urlRegex)];
 		let processedContent = note.content;
@@ -2018,15 +2040,15 @@ async function handlePublicNoteRequest(publicId, env) {
 		}
 		note.content = processedContent;
 
-		// 2. 处理 `files` 附件列表
+		// 2. 澶勭悊 `files` 闄勪欢鍒楄〃
 		let files = [];
 		if (typeof note.files === 'string') {
 			try { files = JSON.parse(note.files); } catch (e) { /* an empty array is fine */ }
 		}
 		for (const file of files) {
-			if (file.id) { // 只处理有 id 的内部文件
+			if (file.id) { // 鍙鐞嗘湁 id 鐨勫唴閮ㄦ枃浠?
 				const privateUrl = `/api/files/${note.id}/${file.id}`;
-				// 复用上面的逻辑，但这次我们知道所有元数据
+				// 澶嶇敤涓婇潰鐨勯€昏緫锛屼絾杩欐鎴戜滑鐭ラ亾鎵€鏈夊厓鏁版嵁
 				const filePublicId = crypto.randomUUID();
 				await env.NOTES_KV.put(`public_file:${filePublicId}`, JSON.stringify({
 					noteId: note.id,
@@ -2039,11 +2061,11 @@ async function handlePublicNoteRequest(publicId, env) {
 		}
 		note.files = files;
 
-		// 3. 安全处理：移除敏感信息
+		// 3. 瀹夊叏澶勭悊锛氱Щ闄ゆ晱鎰熶俊鎭?
 		delete note.id;
 
-		// `pics` 和 `videos` 字段的内容已经被处理并包含在 `content` 中，
-		// 为保持 API 响应干净，我们不再需要它们。
+		// `pics` 鍜?`videos` 瀛楁鐨勫唴瀹瑰凡缁忚澶勭悊骞跺寘鍚湪 `content` 涓紝
+		// 涓轰繚鎸?API 鍝嶅簲骞插噣锛屾垜浠笉鍐嶉渶瑕佸畠浠€?
 		delete note.pics;
 		delete note.videos;
 
@@ -2056,18 +2078,18 @@ async function handlePublicNoteRequest(publicId, env) {
 }
 
 /**
- * 处理对分享 Memos Raw 内容的请求
+ * 澶勭悊瀵瑰垎浜?Memos Raw 鍐呭鐨勮姹?
  * GET /api/public/note/raw/:publicId
  */
 async function handlePublicRawNoteRequest(publicId, env) {
-	// 1. 从 KV 获取 noteId
+	// 1. 浠?KV 鑾峰彇 noteId
 	const kvData = await env.NOTES_KV.get(`public_memo:${publicId}`, 'json');
 	if (!kvData || !kvData.noteId) {
 		return new Response('Not Found', { status: 404 });
 	}
 
 	try {
-		// 2. 使用获取到的 noteId 从 D1 查询笔记内容
+		// 2. 浣跨敤鑾峰彇鍒扮殑 noteId 浠?D1 鏌ヨ绗旇鍐呭
 		const note = await env.DB.prepare("SELECT content FROM notes WHERE id = ?").bind(kvData.noteId).first();
 		if (!note) {
 			return new Response('Not Found', { status: 404 });
@@ -2081,7 +2103,7 @@ async function handlePublicRawNoteRequest(publicId, env) {
 }
 
 /**
- * 处理笔记合并请求
+ * 澶勭悊绗旇鍚堝苟璇锋眰
  * POST /api/notes/merge
  * Body: { sourceNoteId: number, targetNoteId: number, addSeparator: boolean }
  */
@@ -2103,7 +2125,7 @@ async function handleMergeNotes(request, env) {
 			return jsonResponse({ error: 'One or both notes not found.' }, 404);
 		}
 
-		// 目标笔记在前，源笔记在后
+		// 鐩爣绗旇鍦ㄥ墠锛屾簮绗旇鍦ㄥ悗
 		const separator = addSeparator ? '\n\n---\n\n' : '\n\n';
 		const mergedContent = targetNote.content + separator + sourceNote.content;
 		const targetFiles = JSON.parse(targetNote.files || '[]');
@@ -2112,21 +2134,21 @@ async function handleMergeNotes(request, env) {
 
 		const mergedTimestamp = targetNote.updated_at;
 
-		// --- 数据库与 R2 操作 ---
+		// --- 鏁版嵁搴撲笌 R2 鎿嶄綔 ---
 
-		// 更新目标笔记
+		// 鏇存柊鐩爣绗旇
 		const stmt = db.prepare(
 			"UPDATE notes SET content = ?, files = ?, updated_at = ? WHERE id = ?"
 		);
 		await stmt.bind(mergedContent, mergedFiles, mergedTimestamp, targetNote.id).run();
 
-		// 为更新后的目标笔记重新处理标签
+		// 涓烘洿鏂板悗鐨勭洰鏍囩瑪璁伴噸鏂板鐞嗘爣绛?
 		await processNoteTags(db, targetNote.id, mergedContent);
 
-		// 删除源笔记
+		// 鍒犻櫎婧愮瑪璁?
 		await db.prepare("DELETE FROM notes WHERE id = ?").bind(sourceNote.id).run();
 
-		// 将源笔记的文件移动到目标笔记的 R2 目录下
+		// 灏嗘簮绗旇鐨勬枃浠剁Щ鍔ㄥ埌鐩爣绗旇鐨?R2 鐩綍涓?
 		if (sourceFiles.length > 0) {
 			const r2 = env.NOTES_R2_BUCKET;
 			for (const file of sourceFiles) {
@@ -2140,7 +2162,7 @@ async function handleMergeNotes(request, env) {
 			}
 		}
 
-		// 返回更新后的目标笔记
+		// 杩斿洖鏇存柊鍚庣殑鐩爣绗旇
 		const updatedMergedNote = await db.prepare("SELECT * FROM notes WHERE id = ?").bind(targetNote.id).first();
 		if (typeof updatedMergedNote.files === 'string') {
 			updatedMergedNote.files = JSON.parse(updatedMergedNote.files);
@@ -2155,9 +2177,10 @@ async function handleMergeNotes(request, env) {
 }
 
 /**
- * 统一的 JSON 响应函数
+ * 缁熶竴鐨?JSON 鍝嶅簲鍑芥暟
  */
 function jsonResponse(data, status = 200, headers = new Headers()) {
 	headers.set('Content-Type', 'application/json');
 	return new Response(JSON.stringify(data, null, 2), { status, headers });
 }
+
