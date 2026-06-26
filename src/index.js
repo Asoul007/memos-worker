@@ -1100,13 +1100,13 @@ async function handleTelegramWebhook(request, env, secret) {
 
 		const authorizedIdsStr = env.AUTHORIZED_TELEGRAM_IDS;
 		if (!authorizedIdsStr) {
-			console.error("瀹夊叏璀﹀憡锛欰UTHORIZED_TELEGRAM_IDS 鐜鍙橀噺鏈缃€?);
+			console.error("Security warning: AUTHORIZED_TELEGRAM_IDS not set.");
 			return new Response('OK', { status: 200 });
 		}
 		chatId = message.chat.id;
 		const senderId = message.from?.id;
 		if (!senderId || authorizedIdsStr != senderId.toString()) {
-			console.log(`宸查樆姝㈡潵鑷湭鎺堟潈鎴栨湭鐭ョ敤鎴?${senderId || ''} 鐨勮姹傘€俙);
+			console.log(`Blocked request from unauthorized user ${senderId || ''}.`);
 			return new Response('OK', { status: 200 });
 		}
 
@@ -1169,7 +1169,7 @@ async function handleTelegramWebhook(request, env, secret) {
 		const insertStmt = db.prepare("INSERT INTO notes (content, files, is_pinned, created_at, updated_at, pics, videos) VALUES (?, ?, 0, ?, ?, ?, ?) RETURNING id");
 		const { id: noteId } = await insertStmt.bind('', '[]', now, now, '[]', '[]').first();
 		if (!noteId) {
-			throw new Error("鏃犳硶鍦ㄦ暟鎹簱涓垱寤虹瑪璁拌褰曘€?);
+			throw new Error("Failed to create note record in database.");
 		}
 
 		// 鍥剧墖澶勭悊锛堜繚鎸佷簩娆′笂浼狅級
@@ -1182,7 +1182,7 @@ async function handleTelegramWebhook(request, env, secret) {
 			const fileName = `photo_${message.message_id}.${(filePath.split('.').pop() || 'jpg')}`;
 			const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
 			const fileRes = await fetch(downloadUrl);
-			if (!fileRes.ok) throw new Error("浠?Telegram 涓嬭浇鍥剧墖澶辫触銆?);
+			if (!fileRes.ok) throw new Error("Failed to download image from Telegram.");
 			const fileId = crypto.randomUUID();
 			await bucket.put(`${noteId}/${fileId}`, fileRes.body);
 			const internalFileUrl = `/api/files/${noteId}/${fileId}`;
@@ -1205,7 +1205,7 @@ async function handleTelegramWebhook(request, env, secret) {
 				if (!fileInfo.ok) throw new Error(`Telegram getFile API 閿欒 (video): ${fileInfo.description}`);
 				const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${fileInfo.result.file_path}`;
 				const fileRes = await fetch(downloadUrl);
-				if (!fileRes.ok) throw new Error("浠?Telegram 涓嬭浇瑙嗛澶辫触銆?);
+				if (!fileRes.ok) throw new Error("Failed to download video from Telegram.");
 				const fileId = crypto.randomUUID();
 				await bucket.put(`${noteId}/${fileId}`, fileRes.body);
 				const internalFileUrl = `/api/files/${noteId}/${fileId}`;
@@ -1235,7 +1235,7 @@ async function handleTelegramWebhook(request, env, secret) {
 				if (!fileInfo.ok) throw new Error(`Telegram getFile API 閿欒 (document): ${fileInfo.description}`);
 				const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${fileInfo.result.file_path}`;
 				const fileRes = await fetch(downloadUrl);
-				if (!fileRes.ok) throw new Error("浠?Telegram 涓嬭浇鏂囦欢澶辫触銆?);
+				if (!fileRes.ok) throw new Error("Failed to download file from Telegram.");
 				const fileId = crypto.randomUUID();
 				await bucket.put(`${noteId}/${fileId}`, fileRes.body);
 				filesMeta.push({
