@@ -4,7 +4,7 @@
 	<meta charset='UTF-8'>
 	<meta name='viewport' content='width=device-width, initial-scale=1.0'>
 	<script src='https://cdnjs.cloudflare.com/ajax/libs/marked/15.0.12/marked.min.js'></script>
-	<title>Shared Memo</title>
+	<title data-i18n="人间自留地">人间自留地</title>
 	<link id='hljs-light-theme' rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css'>
 	<link id='hljs-dark-theme' rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css' disabled>
 	<link rel='icon' type='image/png' href='/favicon.png'>
@@ -88,7 +88,7 @@
 
 <div class="wrapper">
 	<header>
-		<h3><a href='https://github.com/souvenp/memos-worker' target="_blank">MEMOS</a></h3>
+		<h3>人间自留地</h3>
 		<button type='button' id='theme-toggle-btn' class='icon-btn' title='Toggle Theme'></button>
 	</header>
 	<main id="main-content">
@@ -161,11 +161,12 @@
 			attachmentsHTML += '</div>';
 		}
 
+		const contentHtml = note.content ? marked.parse(note.content) : '<p style="color: var(--text-secondary);">(empty note)</p>';
 		noteElement.innerHTML = `
 			<div class='note-header'>
 				<div class='note-meta'><span title='${new Date(note.updated_at).toISOString()}'>${time}</span></div>
 			</div>
-			<div class='note-content'>${marked.parse(note.content)}</div>
+			<div class="note-content">${contentHtml}</div>
             ${attachmentsHTML}
 		`;
 		return noteElement;
