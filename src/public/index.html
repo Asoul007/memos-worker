@@ -734,7 +734,6 @@
 	padding: 1rem 0 8rem 0;
 	color: var(--text-secondary);
 	font-size: 0.9rem;
-	grid-column: 1 / -1;
   }
 
   .note-header {
@@ -5724,7 +5723,7 @@ function toggleLang() {
 							endMarker.className = 'notes-end-marker';
 							endMarker.textContent = t('No more notes.');
 							endMarker.id = 'notes-end-marker';
-							notesContainer.appendChild(endMarker);
+							notesSection.appendChild(endMarker);
 						}
 					} else {
 						notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${appState.baseMode === "favorites" ? t("No favorites yet.") : appState.baseMode === "archive" ? t("No archives yet.") : t("Nothing here yet.")}</div>`;
@@ -7868,7 +7867,7 @@ function toggleLang() {
 						endMarker.className = 'notes-end-marker';
 						endMarker.textContent = t('No more notes.');
 						endMarker.id = 'notes-end-marker';
-						notesContainer.appendChild(endMarker);
+						notesSection.appendChild(endMarker);
 					}
 				} else {
 					notesContainer.innerHTML = `<div style="text-align: center; color: var(--text-secondary); padding: 1rem 0;">${appState.baseMode === "favorites" ? t("No favorites yet.") : appState.baseMode === "archive" ? t("No archives yet.") : t("Nothing here yet.")}</div>`;
@@ -8157,7 +8156,7 @@ function toggleLang() {
 			endMarker.className = 'notes-end-marker';
 			endMarker.textContent = t('No more notes.');
 			endMarker.id = 'notes-end-marker';
-			notesContainer.appendChild(endMarker);
+			notesSection.appendChild(endMarker);
 		}
 	}
 
