@@ -1701,7 +1701,7 @@ async function handleDocsNodeDelete(request, nodeId, env) {
 	try {
 		const nodeToDelete = await db.prepare("SELECT id FROM nodes WHERE id = ?").bind(nodeId).first();
 		if (!nodeToDelete) {
-			return jsonResponse({ error: "鑺傜偣鏈壘鍒般€? }, 404);
+			return jsonResponse({ error: "Node not found" }, 404);
 		}
 
 		// 鍙渶瑕佸垹闄よ繖涓€涓妭鐐癸紝鏁版嵁搴撲細鑷姩鍒犻櫎鎵€鏈夊瓙瀛欒妭鐐广€?
