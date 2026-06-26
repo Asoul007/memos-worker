@@ -121,11 +121,16 @@
 	applyTheme(savedTheme);
 
 	function formatTimestamp(timestamp) {
-		const date = new Date(timestamp);
-		return date.toLocaleString(undefined, {
-			year: 'numeric', month: 'short', day: 'numeric',
-			hour: 'numeric', minute: '2-digit'
-		});
+		const date = new Date(timestamp.replace(' ', 'T'));
+		if (isNaN(date.getTime())) return '';
+		try {
+			return date.toLocaleString(undefined, {
+				year: 'numeric', month: 'short', day: 'numeric',
+				hour: 'numeric', minute: '2-digit'
+			});
+		} catch (e) {
+			return '';
+		}
 	}
 	const formatBytes = (b, d = 2) => {
 		if (!b || b === 0) return '0 Bytes';
@@ -165,9 +170,11 @@
 		if (note.content) {
 			try { contentHtml = marked.parse(note.content); } catch (e) { /* fallback */ }
 		}
+		let titleDate = '';
+		try { titleDate = new Date((note.updated_at||'').replace(' ', 'T')).toISOString(); } catch(e) {}
 		noteElement.innerHTML = `
 			<div class='note-header'>
-				<div class='note-meta'><span title='${new Date(note.updated_at).toISOString()}'>${time}</span></div>
+				<div class='note-meta'><span title='${titleDate}'>${time}</span></div>
 			</div>
 			<div class="note-content">${contentHtml}</div>
             ${attachmentsHTML}
