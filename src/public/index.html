@@ -7492,6 +7492,9 @@ function toggleLang() {
 		authContainer.style.display = 'block';
 		appContainer.style.display = 'none';
 		document.body.classList.add('auth-visible');
+		// 确保登录表单不受之前 glass-effect 影响
+		const authForm = document.querySelector('.auth-form');
+		if (authForm) authForm.classList.remove('glass-effect');
 		// 在登录页面也应用自定义背景（如果已设置）
 		if (settings.backgroundImage) {
 			document.documentElement.style.setProperty('--bg-image-url', `url(${settings.backgroundImage})`);
