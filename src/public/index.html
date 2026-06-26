@@ -3835,49 +3835,53 @@
 <!-- Share Link Modal -->
 <div id='share-link-modal-overlay' class='custom-modal-overlay'>
 	<div id='share-link-modal-box' class='custom-modal-box' style="max-width: 600px; text-align: left;">
-		<h3 style="margin-top:0;">Share Memo</h3>
+		<h3 style="margin-top:0;" data-i18n="Share Memo">Share Memo</h3>
 		<div id="share-link-content">
 			<!-- 加载状态 -->
 			<div id="share-link-loader" style="text-align: center; padding: 2rem 0;">
 				<div class="spinner"></div>
-				<p>Generating link...</p>
+				<p data-i18n="Generating link...">Generating link...</p>
 			</div>
 			<!-- 链接内容 -->
 			<div id="share-link-details" style="display: none;">
-				<p>Anyone with these public links can view this memo.</p>
+				<p data-i18n="Anyone with these public links can view this memo.">Anyone with these public links can view this memo.</p>
 				<div class="share-link-item" style="margin-bottom: 1rem;">
-					<label style="font-weight: 500;">Display Link</label>
+					<label style="font-weight: 500;" data-i18n="Display Link">Display Link</label>
 					<div style="display: flex; gap: 0.5rem;">
 						<input type="text" id="share-display-link-input" readonly style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--bg-color);">
-						<button id="copy-display-link-btn" class="btn">Copy</button>
+						<button id="copy-display-link-btn" class="btn" data-i18n="Copy">Copy</button>
 					</div>
 				</div>
 				<div class="share-link-item" style="margin-bottom: 1.5rem;">
-					<label style="font-weight: 500;">Raw Content Link</label>
+					<label style="font-weight: 500;" data-i18n="Raw Content Link">Raw Content Link</label>
 					<div style="display: flex; gap: 0.5rem;">
 						<input type="text" id="share-raw-link-input" readonly style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--bg-color);">
-						<button id="copy-raw-link-btn" class="btn">Copy</button>
+						<button id="copy-raw-link-btn" class="btn" data-i18n="Copy">Copy</button>
 					</div>
 				</div>
 
-				<div class="share-link-item" style="display: flex; align-items: center; gap: 1rem;">
-					<label for="expiration-select" style="font-weight: 500; flex-shrink: 0;">Expires in:</label>
+				<div style="text-align: center; margin-bottom: 1rem;">
+					<img id="share-qr-code" style="width: 160px; height: 160px; border-radius: 8px; display: none;" alt="QR Code">
+				</div>
+
+					<div class="share-link-item" style="display: flex; align-items: center; gap: 1rem;">
+					<label for="expiration-select" style="font-weight: 500; flex-shrink: 0;" data-i18n="Expires in">Expires in:</label>
 					<select id="expiration-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; background-color: var(--bg-color); color: var(--text-color);">
-						<option value="3600">1 Hour</option>
-						<option value="14400">4 Hour</option>
-						<option value="43200">12 Hours</option>
-						<option value="86400">1 Day</option>
-						<option value="604800">7 Days</option>
-						<option value="0">Never</option>
+						<option value="3600" data-i18n="1 Hour">1 Hour</option>
+						<option value="14400" data-i18n="4 Hours">4 Hours</option>
+						<option value="43200" data-i18n="12 Hours">12 Hours</option>
+						<option value="86400" data-i18n="1 Day">1 Day</option>
+						<option value="604800" data-i18n="7 Days">7 Days</option>
+						<option value="0" data-i18n="Never">Never</option>
 						<option disabled>──────────</option>
-						<option value="revoke">Revoke Now (Expire Immediately)</option>
+						<option value="revoke" data-i18n="Revoke Now (Expire Immediately)">Revoke Now (Expire Immediately)</option>
 					</select>
 					<span id="expiration-status" style="font-size: 0.8rem; color: var(--text-secondary); width: 80px; text-align: right;"></span>
 				</div>
 			</div>
 		</div>
 		<div class='custom-modal-actions' style="justify-content: flex-end;">
-			<button id='share-link-close-btn' class='btn btn-secondary'>Close</button>
+			<button id='share-link-close-btn' class='btn btn-secondary' data-i18n="Close">Close</button>
 		</div>
 	</div>
 </div>
@@ -4262,7 +4266,7 @@
 				await navigator.clipboard.writeText(codeToCopy);
 				copyButton.innerHTML = successIcon;
 				copyButton.classList.add('copied');
-				copyButton.title = 'Copied!';
+				copyButton.title = t('Copied!');
 				setTimeout(() => {
 					copyButton.innerHTML = originalIcon;
 					copyButton.classList.remove('copied');
@@ -4509,6 +4513,9 @@ const LANG = {
     "Light Mode": "浅色模式",
     "Dark Mode": "深色模式",
     "No headings found.": "未找到标题。",
+
+    "Expires in": "过期时间",
+    "QR Code": "二维码",
   },
   en: {
     "Home": "Home",
@@ -4984,6 +4991,8 @@ function toggleLang() {
 		shareModal.querySelector('.custom-modal-box').classList.remove('active');
 		delete shareModal.dataset.noteId;
 		currentPublicId = null;
+		const qrImg = document.getElementById('share-qr-code');
+		if (qrImg) qrImg.style.display = 'none';
 	}
 
 	closeShareModalBtn.addEventListener('click', closeShareModal);
@@ -4997,13 +5006,13 @@ function toggleLang() {
 		try {
 			await navigator.clipboard.writeText(inputElement.value);
 			const originalText = buttonElement.textContent;
-			buttonElement.textContent = 'Copied!';
+			buttonElement.textContent = t('Copied!');
 			setTimeout(() => {
 				buttonElement.textContent = originalText;
 			}, 2000);
 		} catch (err) {
 			console.error('Failed to copy text: ', err);
-			showCustomAlert('Failed to copy link.', 'error');
+			showCustomAlert(t('Failed to copy link.'), 'error');
 		}
 	}
 
@@ -5196,13 +5205,19 @@ function toggleLang() {
 					const response = await fetch(`/api/notes/${noteId}/share`, { method: 'POST' });
 					if (!response.ok) {
 						const err = await response.json();
-						throw new Error(err.error || 'Failed to generate share link.');
+						throw new Error(err.error || t('Failed to generate share link.'));
 					}
 					const data = await response.json();
 
 					currentPublicId = data.publicId; // 存储 publicId
 
 					document.getElementById('share-display-link-input').value = data.displayUrl;
+					// 更新二维码
+					const qrImg = document.getElementById("share-qr-code");
+					if (qrImg) {
+						qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(data.displayUrl);
+						qrImg.style.display = "inline-block";
+					}
 					document.getElementById('share-raw-link-input').value = data.rawUrl;
 					loader.style.display = 'none';
 					details.style.display = 'block';
@@ -5535,7 +5550,7 @@ function toggleLang() {
 									await navigator.clipboard.writeText(urlToCopy);
 									shareBtn.innerHTML = successIcon;
 									shareBtn.classList.add('copied');
-									shareBtn.title = 'Copied!';
+									shareBtn.title = t('Copied!');
 									showToast(t('Copied!'), 'success');
 									showToast(t('Copied!'), 'success');
 									setTimeout(() => {
@@ -5553,7 +5568,7 @@ function toggleLang() {
 							const response = await fetch(`/api/notes/${noteId}/files/${fileId}/share`, { method: 'POST' });
 							if (!response.ok) {
 					const errorData = await response.json();
-					throw new Error(errorData.error || 'Failed to generate link.');
+					throw new Error(errorData.error || t('Failed to generate link.'));
 				}
 				const { url } = await response.json();
 
@@ -5561,7 +5576,7 @@ function toggleLang() {
 
 				shareBtn.innerHTML = successIcon;
 				shareBtn.classList.add('copied');
-				shareBtn.title = 'Copied!';
+				shareBtn.title = t('Copied!');
 				showToast(t('Copied!'), 'success');
 				showToast(t('Copied!'), 'success');
 
@@ -8724,7 +8739,7 @@ function toggleLang() {
 				const response = await fetch(`/api/notes/${noteId}/files/${fileId}/share`, { method: 'POST' });
 				if (!response.ok) {
 					const errorData = await response.json();
-					throw new Error(errorData.error || 'Failed to generate link.');
+					throw new Error(errorData.error || t('Failed to generate link.'));
 				}
 				const { url } = await response.json();
 
@@ -8732,7 +8747,7 @@ function toggleLang() {
 
 				shareBtn.innerHTML = successIcon;
 				shareBtn.classList.add('copied');
-				shareBtn.title = 'Copied!';
+				shareBtn.title = t('Copied!');
 
 				setTimeout(() => {
 					shareBtn.innerHTML = originalIcon;
@@ -9584,3 +9599,6 @@ function toggleLang() {
 		handleEditorLayout();
 	// });
 </script>
+    "Expires in": "Expires in",
+    "QR Code": "QR Code",
+
