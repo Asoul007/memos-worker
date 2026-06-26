@@ -3424,7 +3424,7 @@
 							<button type='button' class='toolbar-btn' data-md='bold' title='Bold (Ctrl+B)' data-i18n='Bold (Ctrl+B)' data-i18n-type='title'><b>B</b></button>
 							<button type='button' class='toolbar-btn' data-md='italic' title='Italic (Ctrl+I)' data-i18n='Italic (Ctrl+I)' data-i18n-type='title'><i>I</i></button>
 							<button type='button' class='toolbar-btn' data-md='link' title='Insert Link (Ctrl+K)' data-i18n='Insert Link (Ctrl+K)' data-i18n-type='title'>Link</button>
-							<button type='button' class='toolbar-btn' data-md='image' title='Insert Image' data-i18n='Insert Image' data-i18n-type='title'>Img</button>
+							<button type='button' class='toolbar-btn' data-md='image' title='Insert image' data-i18n='Insert image' data-i18n-type='title'>Img</button>
 							<button type='button' class='toolbar-btn' data-md='code' title='Insert Code Block' data-i18n='Insert Code Block' data-i18n-type='title'>Code</button>
 
 						</div>
@@ -4432,6 +4432,8 @@ const LANG = {
     "Delete tag": "删除标签",
     "Tag deleted.": "标签已删除。",
     "Change tag color": "修改标签颜色",
+    "Enter the URL:": "请输入链接地址：",
+    "Enter the image URL:": "请输入图片地址：",
     "Tag color updated.": "标签颜色已更新。",
     "Are you sure you want to delete tag \"{tag}\"?": "确定要删除标签 \"{tag}\" 吗？",
     "Loading more...": "加载更多...",
@@ -4640,6 +4642,8 @@ const LANG = {
     "Delete tag": "Delete tag",
     "Tag deleted.": "Tag deleted.",
     "Change tag color": "Change tag color",
+    "Enter the URL:": "Enter the URL:",
+    "Enter the image URL:": "Enter the image URL:",
     "Tag color updated.": "Tag color updated.",
     "Are you sure you want to delete tag \"{tag}\"?": "Are you sure you want to delete tag \"{tag}\"?",
     "Loading more...": "Loading more...",
@@ -7050,11 +7054,11 @@ function toggleLang() {
 				break;
 			}
 			case 'link':
-				const url = prompt('Enter the URL:', 'https://');
+				const url = prompt(t('Enter the URL:'), 'https://');
 				if (url) applyMarkdown('[', `](${url})`);
 				break;
 			case 'image':
-				const imgUrl = prompt('Enter the image URL:');
+				const imgUrl = prompt(t('Enter the image URL:'));
 				if (imgUrl) applyMarkdown('![', `](${imgUrl})`);
 				break;
 			case 'code':
@@ -7095,12 +7099,12 @@ function toggleLang() {
 					applyMarkdown('*');
 					break;
 				case 'link': {
-					const url = prompt('Enter the URL:', 'https://');
+					const url = prompt(t('Enter the URL:'), 'https://');
 					if (url) applyMarkdown('[', `](${url})`);
 					break;
 				}
 				case 'image': {
-					const imgUrl = prompt('Enter the image URL:');
+					const imgUrl = prompt(t('Enter the image URL:'));
 					if (imgUrl) applyMarkdown('![', `](${imgUrl})`);
 					break;
 				}
