@@ -2062,6 +2062,12 @@
 	margin-left: 4px;
   }
 
+  #tag-color-popover {
+	position: fixed;
+	width: 170px;
+	z-index: 103;
+  }
+
   .tag-label {
 	display: inline-flex;
 	align-items: center;
@@ -3553,6 +3559,21 @@
 			<input type='text' id='hex-color-input' class='hex-color-input' maxlength='7' placeholder='#367cff'>
 		</div>
 	</div>
+</div>
+
+<div id='tag-color-popover' class='theme-popover'>
+    <div class='color-palette' id='tag-color-palette'></div>
+    <div class='custom-color-separator'></div>
+    <div class='custom-color-picker'>
+        <label for='tag-color-picker-input' class='color-picker-label'>
+            <div id='tag-color-picker-preview' class='color-picker-preview'></div>
+            <span data-i18n='Custom'>Custom</span>
+        </label>
+        <input type='color' id='tag-color-picker-input' class='hidden-color-input'>
+        <div class='hex-input-wrapper'>
+            <input type='text' id='tag-color-hex-input' class='hex-color-input' maxlength='7' placeholder='#3b82f6'>
+        </div>
+    </div>
 </div>
 
 <div id='note-popover-menu' class='popover-menu'>
@@ -6084,7 +6105,13 @@ function toggleLang() {
 		{ name: 'Yellow', color: '#d69e2e', hover: '#b7791f' }
 	];
 
-	// 鍔ㄦ€佸～鍏呴璁鹃鑹?
+	const tagPresetColors = [
+		'#ef4444', '#f97316', '#f59e0b', '#eab308',
+		'#22c55e', '#14b8a6', '#06b6d4', '#3b82f6',
+		'#6366f1', '#8b5cf6', '#a855f7', '#ec4899'
+	];
+
+	// 动态填充预设颜色
 	fsColorPalette.innerHTML = themeColors.map(theme =>
 		`<button class='color-swatch' data-color='${theme.color}' title='${theme.name}' style='background-color: ${theme.color};'></button>`
 	).join('');
@@ -7876,6 +7903,11 @@ function toggleLang() {
 		if (!themeColorPopover.contains(e.target) && !themeColorBtn.contains(e.target)) {
 			themeColorPopover.classList.remove('visible');
 		}
+		const tagColorPopover = document.getElementById('tag-color-popover');
+		if (tagColorPopover.classList.contains('visible') && !tagColorPopover.contains(e.target) && !e.target.closest('.tag-color-dot')) {
+			tagColorPopover.classList.remove('visible');
+			currentTagDot = null;
+		}
 		// 妫€鏌ヨ彍鍗曟槸鍚﹀彲瑙侊紝浠ュ強鐐瑰嚮鐨勭洰鏍囨槸鍚﹀湪鑿滃崟鍐呴儴鎴栨槸鍚︽槸鈥滄洿澶氣€濇寜閽?
 		// if (
 		// 	waterfallPopoverMenu.classList.contains('visible') &&
@@ -9591,6 +9623,63 @@ function toggleLang() {
 		saveTagMeta(meta);
 	}
 
+	let currentTagDot = null;
+	let tagColorPopoverInitialized = false;
+	function initTagColorPopover() {
+		if (tagColorPopoverInitialized) return;
+		tagColorPopoverInitialized = true;
+		const popover = document.getElementById('tag-color-popover');
+		const palette = document.getElementById('tag-color-palette');
+		const pickerInput = document.getElementById('tag-color-picker-input');
+		const hexInput = document.getElementById('tag-color-hex-input');
+		const preview = document.getElementById('tag-color-picker-preview');
+
+		palette.innerHTML = tagPresetColors.map(c =>
+			`<button class='color-swatch' data-color='${c}' style='background-color: ${c};'></button>`
+		).join('');
+
+		function applyTagColor(color) {
+			if (!currentTagDot) return;
+			currentTagDot.style.background = color;
+			const tagName = currentTagDot.closest('.tag-item').dataset.tagName;
+			const meta = getTagMeta();
+			meta[tagName] = meta[tagName] || {};
+			meta[tagName].color = color;
+			saveTagMeta(meta);
+			popover.classList.remove('visible');
+		}
+
+		palette.addEventListener('click', e => {
+			const swatch = e.target.closest('.color-swatch');
+			if (swatch) {
+				applyTagColor(swatch.dataset.color);
+			}
+		});
+
+		pickerInput.addEventListener('input', () => {
+			const c = pickerInput.value;
+			preview.style.backgroundColor = c;
+			hexInput.value = c;
+		});
+		pickerInput.addEventListener('change', () => {
+			applyTagColor(pickerInput.value);
+		});
+
+		hexInput.addEventListener('input', () => {
+			const v = hexInput.value;
+			if (/^#[0-9a-f]{6}$/i.test(v)) {
+				preview.style.backgroundColor = v;
+				pickerInput.value = v;
+			}
+		});
+		hexInput.addEventListener('change', () => {
+			const v = hexInput.value;
+			if (/^#[0-9a-f]{6}$/i.test(v)) {
+				applyTagColor(v);
+			}
+		});
+	}
+
 	async function loadAndRenderTags() {
 		const tagsContainer = document.getElementById('tags-container');
 		try {
@@ -9642,27 +9731,28 @@ function toggleLang() {
 				const dot = tagLi.querySelector('.tag-color-dot');
 				dot.addEventListener('click', e => {
 					e.stopPropagation();
-					const existing = document.getElementById('tag-color-picker');
-					if (existing) existing.remove();
-					const input = document.createElement('input');
-					input.type = 'color';
-					input.id = 'tag-color-picker';
-					input.value = tagColor || '#3b82f6';
-					input.style.position = 'fixed';
-					input.style.left = e.clientX + 'px';
-					input.style.top = e.clientY + 'px';
-					input.style.opacity = '0';
-					input.style.pointerEvents = 'none';
-					input.addEventListener('input', () => {
-						const c = input.value;
-						dot.style.background = c;
-						meta[tag.name] = meta[tag.name] || {};
-						meta[tag.name].color = c;
-						saveTagMeta(meta);
+					initTagColorPopover();
+					const popover = document.getElementById('tag-color-popover');
+					const palette = document.getElementById('tag-color-palette');
+					const pickerInput = document.getElementById('tag-color-picker-input');
+					const hexInput = document.getElementById('tag-color-hex-input');
+					const preview = document.getElementById('tag-color-picker-preview');
+
+					currentTagDot = dot;
+
+					const currentColor = tagColor || '#3b82f6';
+					preview.style.backgroundColor = currentColor;
+					hexInput.value = currentColor;
+					pickerInput.value = currentColor;
+
+					palette.querySelectorAll('.color-swatch').forEach(sw => {
+						sw.classList.toggle('active', sw.dataset.color === currentColor);
 					});
-					input.addEventListener('blur', () => input.remove());
-					document.body.appendChild(input);
-					input.click();
+
+					const rect = dot.getBoundingClientRect();
+					popover.style.left = Math.min(rect.left, window.innerWidth - 190) + 'px';
+					popover.style.top = (rect.bottom + 4) + 'px';
+					popover.classList.add('visible');
 				});
 				// 鎷栨嫿浜嬩欢
 				tagLi.addEventListener('dragstart', e => {
