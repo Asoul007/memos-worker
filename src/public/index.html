@@ -3988,7 +3988,7 @@
                 <button id='calendar-next' class='calendar-nav-btn' title='Next month' data-i18n='Next month' data-i18n-type='title'>►</button>
             `;
 			this.container.appendChild(header);
-			const nextMonthBtn = document.getElementById('calendar-next');
+			const nextMonthBtn = this.container.querySelector('#calendar-next');
 			const firstDayOfNextMonth = new Date(year, month + 1, 1);
 			if (firstDayOfNextMonth > this.today) {
 				nextMonthBtn.disabled = true;
@@ -5861,10 +5861,12 @@ function toggleLang() {
 		} finally {
 			document.body.classList.remove('loading');
 			const initialLoader = document.getElementById('initial-loader');
-			initialLoader.style.opacity = '0';
-			setTimeout(() => {
-				initialLoader.style.display = 'none';
-			}, 200);
+			if (initialLoader) {
+				initialLoader.style.opacity = '0';
+				setTimeout(() => {
+					initialLoader.style.display = 'none';
+				}, 200);
+			}
 		}
 	}
 
@@ -5872,6 +5874,8 @@ function toggleLang() {
 		const noteForm = document.getElementById('note-form');
 		const textarea = document.getElementById('note-input');
 		const preview = document.getElementById('main-edit-preview');
+
+		if (!noteForm || !textarea || !preview) return;
 
 		// 如果当前不是分栏模式，只需确保 textarea 高度自适应即可
 		if (!noteForm.classList.contains('split-mode')) {
@@ -8228,6 +8232,10 @@ function toggleLang() {
 
 			const notesByDate = new Map();
 			regularNotes.forEach(note => {
+				if (!note.updated_at) {
+					console.warn('Note missing updated_at, skipping date grouping', note.id);
+					return;
+				}
 				const dateKey = dateFormatter.format(new Date(note.updated_at));
 				if (!notesByDate.has(dateKey)) {
 					notesByDate.set(dateKey, []);
