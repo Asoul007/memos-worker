@@ -3384,19 +3384,19 @@
 					</div>
 
 					<div id='main-editor-toolbar' class='main-editor-toolbar'>
-						<button type='button' class='toolbar-btn' data-md='bold' title='Bold (Ctrl+B)'><b>B</b></button>
-						<button type='button' class='toolbar-btn' data-md='italic' title='Italic (Ctrl+I)'><i>I</i></button>
-						<button type='button' class='toolbar-btn' data-md='strike' title='Strikethrough'><s>S</s></button>
-						<button type='button' class='toolbar-btn' data-md='link' title='Insert Link (Ctrl+K)'>Link</button>
-						<button type='button' class='toolbar-btn' data-md='image' title='Insert Image'>Img</button>
-						<button type='button' class='toolbar-btn' data-md='blockquote' title='Blockquote'>>_</button>
-						<button type='button' class='toolbar-btn' data-md='ulist' title='Unordered List'>
+					<button type='button' class='toolbar-btn' data-md='bold' title='Bold (Ctrl+B)' data-i18n='Bold (Ctrl+B)' data-i18n-type='title'><b>B</b></button>
+					<button type='button' class='toolbar-btn' data-md='italic' title='Italic (Ctrl+I)' data-i18n='Italic (Ctrl+I)' data-i18n-type='title'><i>I</i></button>
+					<button type='button' class='toolbar-btn' data-md='strike' title='Strikethrough' data-i18n='Strikethrough' data-i18n-type='title'><s>S</s></button>
+					<button type='button' class='toolbar-btn' data-md='link' title='Insert Link (Ctrl+K)' data-i18n='Insert Link (Ctrl+K)' data-i18n-type='title'>Link</button>
+					<button type='button' class='toolbar-btn' data-md='image' title='Insert Image' data-i18n='Insert image' data-i18n-type='title'>Img</button>
+					<button type='button' class='toolbar-btn' data-md='blockquote' title='Blockquote' data-i18n='Blockquote' data-i18n-type='title'>>_</button>
+					<button type='button' class='toolbar-btn' data-md='ulist' title='Unordered List' data-i18n='Unordered List' data-i18n-type='title'>
 							<svg xmlns='http://www.w3.org/2000/svg' height='18px' viewBox='0 0 24 24' width='18px' fill='currentColor'>
 								<path d='M0 0h24v24H0V0z' fill='none'/>
 								<path d='M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6s-.67-1.5-1.5-1.5zm0 12c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z'/>
 							</svg>
 						</button>
-						<button type='button' class='toolbar-btn' data-md='code' title='Insert Code Block'>Code</button>
+						<button type='button' class='toolbar-btn' data-md='code' title='Insert Code Block' data-i18n='Insert Code Block' data-i18n-type='title'>Code</button>
 					</div>
 
 					<div class='form-actions'>
@@ -9610,6 +9610,8 @@ function toggleLang() {
 					input.id = 'tag-color-picker';
 					input.value = tagColor || '#3b82f6';
 					input.style.position = 'fixed';
+					input.style.left = e.clientX + 'px';
+					input.style.top = e.clientY + 'px';
 					input.style.opacity = '0';
 					input.style.pointerEvents = 'none';
 					input.addEventListener('input', () => {
