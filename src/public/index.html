@@ -7893,10 +7893,10 @@ function toggleLang() {
 			if (!res.ok) throw new Error('Invalid username or password.');
 			initializeApp();
 		} catch (error) {
-			err.textContent = error.message;
+			err.textContent = t('Invalid username or password.');
 		} finally {
 			btn.disabled = false;
-			btn.textContent = 'Login';
+			btn.textContent = t('Login');
 		}
 	});
 
