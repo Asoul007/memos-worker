@@ -3377,6 +3377,11 @@
 								</svg>
 							</button>
 							<input type='file' id='note-file' multiple style='display:none;'>
+							<button type='button' class='toolbar-btn' data-md='bold' title='Bold (Ctrl+B)' data-i18n='Bold (Ctrl+B)' data-i18n-type='title'><b>B</b></button>
+							<button type='button' class='toolbar-btn' data-md='italic' title='Italic (Ctrl+I)' data-i18n='Italic (Ctrl+I)' data-i18n-type='title'><i>I</i></button>
+							<button type='button' class='toolbar-btn' data-md='link' title='Insert Link (Ctrl+K)' data-i18n='Insert Link (Ctrl+K)' data-i18n-type='title'>Link</button>
+							<button type='button' class='toolbar-btn' data-md='image' title='Insert Image' data-i18n='Insert Image' data-i18n-type='title'>Img</button>
+							<button type='button' class='toolbar-btn' data-md='code' title='Insert Code Block' data-i18n='Insert Code Block' data-i18n-type='title'>Code</button>
 
 						</div>
 						<!-- 右侧工具组 -->
@@ -6984,6 +6989,54 @@ function toggleLang() {
 		textarea.dispatchEvent(new Event('input', { bubbles: true }));
 	});
 
+	// 主页笔记编辑器工具栏的 Markdown 格式化按钮
+	const mainFormActions = document.querySelector('.form-actions');
+	if (mainFormActions) {
+		mainFormActions.addEventListener('click', e => {
+			const target = e.target.closest('.toolbar-btn');
+			if (!target || !target.dataset.md) return;
+
+			const textarea = noteInput;
+			const mdType = target.dataset.md;
+			const start = textarea.selectionStart;
+			const end = textarea.selectionEnd;
+			const selectedText = textarea.value.substring(start, end);
+
+			const applyMarkdown = (prefix, suffix = prefix) => {
+				textarea.focus();
+				document.execCommand('insertText', false, prefix + selectedText + suffix);
+				const newCursorPosition = start + prefix.length + selectedText.length;
+				textarea.selectionStart = newCursorPosition;
+				textarea.selectionEnd = newCursorPosition;
+				textarea.focus();
+			};
+
+			switch (mdType) {
+				case 'bold':
+					applyMarkdown('**');
+					break;
+				case 'italic':
+					applyMarkdown('*');
+					break;
+				case 'link': {
+					const url = prompt('Enter the URL:', 'https://');
+					if (url) applyMarkdown('[', `](${url})`);
+					break;
+				}
+				case 'image': {
+					const imgUrl = prompt('Enter the image URL:');
+					if (imgUrl) applyMarkdown('![', `](${imgUrl})`);
+					break;
+				}
+				case 'code':
+					applyMarkdown('\n```\n', '\n```');
+					break;
+			}
+			// 手动触发input事件，确保预览能够实时更新
+			textarea.dispatchEvent(new Event('input', { bubbles: true }));
+		});
+	}
+
 	// 字体大小选择
 	fsFontsizeSelector.addEventListener('change', (e) => {
 		const size = e.target.value;
@@ -7008,7 +7061,7 @@ function toggleLang() {
 			if (mdType) {
 				e.preventDefault();
 				// 模拟点击对应的按钮
-				document.querySelector(`.toolbar-btn[data-md="${mdType}"]`).click();
+				editorToolbar.querySelector(`.toolbar-btn[data-md="${mdType}"]`).click();
 			}
 		}
 	});
@@ -9557,6 +9610,17 @@ function toggleLang() {
 		handleTabIndentation(event);
 		handleEditorShortcuts(event);
 		handleListAutoInsertion(event);
+		if (event.ctrlKey) {
+			let mdType = null;
+			if (event.key === 'b') mdType = 'bold';
+			if (event.key === 'i') mdType = 'italic';
+			if (event.key === 'k') mdType = 'link';
+			if (mdType) {
+				event.preventDefault();
+				const btn = document.querySelector('.form-actions .toolbar-btn[data-md="' + mdType + '"]');
+				if (btn) btn.click();
+			}
+		}
 	});
 
 	// 通过事件委托为笔记卡片内的编辑框绑定
