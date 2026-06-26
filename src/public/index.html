@@ -4245,6 +4245,7 @@ const LANG = {
     "Logout": "退出登录",
     "Refresh": "刷新",
     "Toggle waterfall mode": "切换瀑布流模式",
+    "Toggle list mode": "切换列表模式",
     "Toggle wide mode": "切换宽屏模式",
     "More options": "更多选项",
     "Search...": "搜索...",
@@ -4410,6 +4411,7 @@ const LANG = {
     "Preview": "预览",
     "Unpin": "取消置顶",
     "Toggle waterfall mode": "切换瀑布流模式",
+    "Toggle list mode": "切换列表模式",
     "Toggle wide mode": "切换宽屏模式",
     "More options": "更多选项",
     "Clear": "清除",
@@ -4437,6 +4439,7 @@ const LANG = {
     "Logout": "Logout",
     "Refresh": "Refresh",
     "Toggle waterfall mode": "Toggle waterfall mode",
+    "Toggle list mode": "Toggle list mode",
     "Toggle wide mode": "Toggle wide mode",
     "More options": "More options",
     "Search...": "Search...",
@@ -4600,6 +4603,7 @@ const LANG = {
     "Preview": "Preview",
     "Unpin": "Unpin",
     "Toggle waterfall mode": "Toggle waterfall mode",
+    "Toggle list mode": "Toggle list mode",
     "Toggle wide mode": "Toggle wide mode",
     "More options": "More options",
     "Clear": "Clear",
@@ -5829,6 +5833,7 @@ function toggleLang() {
 		if (appState.isWaterfall) {
 			notesSection.classList.add('waterfall-mode');
 			waterfallToggleBtn.classList.add('active'); // 按钮变亮
+			waterfallToggleBtn.dataset.i18n = 'Toggle list mode';
 			// 重新计算布局
 			document.querySelectorAll('#notes-container .note').forEach(note => {
 				waterfallObserver.observe(note);
@@ -5836,6 +5841,7 @@ function toggleLang() {
 		} else {
 			notesSection.classList.remove('waterfall-mode');
 			waterfallToggleBtn.classList.remove('active');
+			waterfallToggleBtn.dataset.i18n = 'Toggle waterfall mode';
 			waterfallObserver.disconnect();
 		}
 
@@ -5847,6 +5853,7 @@ function toggleLang() {
 			appLayoutContainer.classList.remove('full-width-mode');
 			wideModeToggleBtn.classList.remove('active');
 		}
+		applyLanguage();
 		scrollToHeatmapEnd();
 	}
 
