@@ -1,5 +1,5 @@
 ﻿const NOTES_PER_PAGE = 10;
-const SESSION_DURATION_SECONDS = 30*86400; // Session 鏈夋晥鏈? 30 澶?
+const SESSION_DURATION_SECONDS = 30*86400; // Session valid for 30 days
 const SESSION_COOKIE = '__session';
 export default {
 	async fetch(request, env, ctx) {
@@ -8,7 +8,7 @@ export default {
 };
 
 /**
- * API 璇锋眰鐨勭粺涓€澶勭悊鍣ㄥ拰璺敱
+ * API request handler and router
  */
 async function handleApiRequest(request, env) {
 	const { pathname } = new URL(request.url);
@@ -252,7 +252,7 @@ async function handleTimelineRequest(request, env) {
 			} else {
 				date = new Date(rawTs);
 			}
-			// 鏃犳晥鏃堕棿鐩存帴璺宠繃锛屼笉鎶涙暟鎹簱閿欒涓柇鎺ュ彛
+			// 鏃犳晥鏃堕棿鐩存帴璺宠繃锛屼笉鎶涙暟鎹簱error涓柇鎺ュ彛
 			if (isNaN(date.getTime())) continue;
 			const parts = timezoneFormatter.formatToParts(date);
 			const year = parseInt(parts.find(p => p.type === 'year').value, 10);
@@ -1177,7 +1177,7 @@ async function handleTelegramWebhook(request, env, secret) {
 			const getFileUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${photo.file_id}`;
 			const fileInfoRes = await fetch(getFileUrl);
 			const fileInfo = await fileInfoRes.json();
-			if (!fileInfo.ok) throw new Error(`Telegram getFile API 閿欒 (photo): ${fileInfo.description}`);
+			if (!fileInfo.ok) throw new Error(`Telegram getFile API error (photo): ${fileInfo.description}`);
 			const filePath = fileInfo.result.file_path;
 			const fileName = `photo_${message.message_id}.${(filePath.split('.').pop() || 'jpg')}`;
 			const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${filePath}`;
@@ -1202,7 +1202,7 @@ async function handleTelegramWebhook(request, env, secret) {
 				const getFileUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${video.file_id}`;
 				const fileInfoRes = await fetch(getFileUrl);
 				const fileInfo = await fileInfoRes.json();
-				if (!fileInfo.ok) throw new Error(`Telegram getFile API 閿欒 (video): ${fileInfo.description}`);
+				if (!fileInfo.ok) throw new Error(`Telegram getFile API error (video): ${fileInfo.description}`);
 				const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${fileInfo.result.file_path}`;
 				const fileRes = await fetch(downloadUrl);
 				if (!fileRes.ok) throw new Error("Failed to download video from Telegram.");
@@ -1232,7 +1232,7 @@ async function handleTelegramWebhook(request, env, secret) {
 				const getFileUrl = `https://api.telegram.org/bot${botToken}/getFile?file_id=${document.file_id}`;
 				const fileInfoRes = await fetch(getFileUrl);
 				const fileInfo = await fileInfoRes.json();
-				if (!fileInfo.ok) throw new Error(`Telegram getFile API 閿欒 (document): ${fileInfo.description}`);
+				if (!fileInfo.ok) throw new Error(`Telegram getFile API error (document): ${fileInfo.description}`);
 				const downloadUrl = `https://api.telegram.org/file/bot${botToken}/${fileInfo.result.file_path}`;
 				const fileRes = await fetch(downloadUrl);
 				if (!fileRes.ok) throw new Error("Failed to download file from Telegram.");
