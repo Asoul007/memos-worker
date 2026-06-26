@@ -161,7 +161,10 @@
 			attachmentsHTML += '</div>';
 		}
 
-		const contentHtml = note.content ? marked.parse(note.content) : '<p style="color: var(--text-secondary);">(empty note)</p>';
+		let contentHtml = '<p style="color: var(--text-secondary);">(empty note)</p>';
+		if (note.content) {
+			try { contentHtml = marked.parse(note.content); } catch (e) { /* fallback */ }
+		}
 		noteElement.innerHTML = `
 			<div class='note-header'>
 				<div class='note-meta'><span title='${new Date(note.updated_at).toISOString()}'>${time}</span></div>
@@ -185,12 +188,14 @@
 			}
 			const noteData = await response.json();
 
+			const noteEl = renderNote(noteData);
 			loader.style.display = 'none';
-			mainContent.appendChild(renderNote(noteData));
+			mainContent.appendChild(noteEl);
 
 		} catch (error) {
 			console.error(error);
-			loader.innerHTML = `<p style="color: #e53e3e;">Error: ${error.message}</p>`;
+			loader.style.display = 'block';
+			loader.innerHTML = `<p style="color: #e53e3e;">${error.message}</p>`;
 		}
 	}
 
