@@ -1658,6 +1658,29 @@
 	padding-right: 1rem;
   }
 
+  .tag-color-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	flex-shrink: 0;
+	cursor: pointer;
+	border: 1px solid var(--border-color);
+	background: transparent;
+  }
+  .tag-color-dot:hover {
+	border-color: var(--text-color);
+  }
+
+  li[data-tag-name].dragging {
+	opacity: 0.4;
+  }
+  li[data-tag-name] {
+	cursor: grab;
+  }
+  li[data-tag-name]:active {
+	cursor: grabbing;
+  }
+
   .tag-count {
 	font-size: 0.8rem;
 	color: var(--text-secondary);
@@ -2523,6 +2546,30 @@
 	background-color: var(--bg-color);
   }
 
+  .main-editor-toolbar {
+	display: flex;
+	gap: 2px;
+	padding: 4px 0;
+	flex-wrap: wrap;
+  }
+  .main-editor-toolbar .toolbar-btn {
+	background: none;
+	border: 1px solid transparent;
+	border-radius: 4px;
+	padding: 2px 8px;
+	cursor: pointer;
+	font-size: 14px;
+	color: var(--text-secondary);
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	line-height: 1.6;
+  }
+  .main-editor-toolbar .toolbar-btn:hover {
+	background: var(--border-color);
+	color: var(--text-color);
+  }
+
   .note.split-mode .edit-area {
 	display: flex;
 	gap: 1rem;
@@ -3334,6 +3381,22 @@
 					<div id='main-editor-container'>
 						<textarea id='note-input' placeholder='Write in Markdown...' rows='3' data-i18n='Write in Markdown...' data-i18n-type='placeholder' data-i18n="Write in Markdown..." data-i18n-type="placeholder"></textarea>
 						<div id='main-edit-preview' class='edit-preview note-content'></div>
+					</div>
+
+					<div id='main-editor-toolbar' class='main-editor-toolbar'>
+						<button type='button' class='toolbar-btn' data-md='bold' title='Bold (Ctrl+B)'><b>B</b></button>
+						<button type='button' class='toolbar-btn' data-md='italic' title='Italic (Ctrl+I)'><i>I</i></button>
+						<button type='button' class='toolbar-btn' data-md='strike' title='Strikethrough'><s>S</s></button>
+						<button type='button' class='toolbar-btn' data-md='link' title='Insert Link (Ctrl+K)'>Link</button>
+						<button type='button' class='toolbar-btn' data-md='image' title='Insert Image'>Img</button>
+						<button type='button' class='toolbar-btn' data-md='blockquote' title='Blockquote'>>_</button>
+						<button type='button' class='toolbar-btn' data-md='ulist' title='Unordered List'>
+							<svg xmlns='http://www.w3.org/2000/svg' height='18px' viewBox='0 0 24 24' width='18px' fill='currentColor'>
+								<path d='M0 0h24v24H0V0z' fill='none'/>
+								<path d='M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6s-.67-1.5-1.5-1.5zm0 12c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z'/>
+							</svg>
+						</button>
+						<button type='button' class='toolbar-btn' data-md='code' title='Insert Code Block'>Code</button>
 					</div>
 
 					<div class='form-actions'>
@@ -8626,6 +8689,59 @@ function toggleLang() {
 
 	document.addEventListener('paste', handleGlobalPaste);
 
+	// 主编辑器工具栏按钮
+	document.getElementById('main-editor-toolbar').addEventListener('click', e => {
+		const target = e.target.closest('.toolbar-btn');
+		if (!target) return;
+		const mdType = target.dataset.md;
+		if (!mdType) return;
+		const textarea = noteInput;
+		const start = textarea.selectionStart;
+		const end = textarea.selectionEnd;
+		const selectedText = textarea.value.substring(start, end);
+		const applyMd = (prefix, suffix = prefix) => {
+			textarea.focus();
+			document.execCommand('insertText', false, prefix + selectedText + suffix);
+			const nc = start + prefix.length + selectedText.length;
+			textarea.selectionStart = nc;
+			textarea.selectionEnd = nc;
+			textarea.focus();
+			textarea.dispatchEvent(new Event('input', { bubbles: true }));
+		};
+		switch (mdType) {
+			case 'bold': applyMd('**'); break;
+			case 'italic': applyMd('*'); break;
+			case 'strike': applyMd('~~'); break;
+			case 'blockquote': applyMd('> ', ''); break;
+			case 'ulist': {
+				if (start === end) { applyMd('- ', ''); break; }
+				const val = textarea.value;
+				const fls = val.lastIndexOf('\n', start - 1) + 1;
+				let lle = val.indexOf('\n', end);
+				if (lle === -1) lle = val.length;
+				if (val.substring(end - 1, end) === '\n') lle = end - 1;
+				const block = val.substring(fls, lle);
+				const lines = block.split('\n');
+				const toggle = lines.every(l => /^\s*[-*+]\s/.test(l) || l.trim() === '');
+				let nb = '', delta = 0;
+				if (toggle) {
+					nb = lines.map(l => { if (l.trim() === '') return l; const t = l.replace(/^\s*[-*+]\s/, ''); delta -= (l.length - t.length); return t; }).join('\n');
+				} else {
+					nb = lines.map(l => { if (l.trim() === '' || /^\s*[-*+]\s/.test(l)) return l; delta += 2; return '- ' + l; }).join('\n');
+				}
+				textarea.focus();
+				textarea.setSelectionRange(fls, lle);
+				document.execCommand('insertText', false, nb);
+				textarea.setSelectionRange(fls, lle + delta);
+				textarea.dispatchEvent(new Event('input', { bubbles: true }));
+				break;
+			}
+			case 'link': { const url = prompt('Enter the URL:', 'https://'); if (url) applyMd('[', `](${url})`); break; }
+			case 'image': { const imgUrl = prompt('Enter the image URL:'); if (imgUrl) applyMd('![', `](${imgUrl})`); break; }
+			case 'code': applyMd('\n```\n', '\n```'); break;
+		}
+	});
+
 	noteForm.addEventListener('submit', async e => {
 		e.preventDefault();
 		if (!noteInput.value.trim() && noteFile.files.length === 0) return showCustomAlert(t('Content or a file is required.'), 'error');
@@ -9420,12 +9536,45 @@ function toggleLang() {
 		}
 	});
 
+	// === 标签颜色和排序 ===
+	const TAG_META_KEY = 'memos-tag-meta';
+	function getTagMeta() {
+		try { return JSON.parse(localStorage.getItem(TAG_META_KEY)) || {}; } catch { return {}; }
+	}
+	function saveTagMeta(meta) {
+		localStorage.setItem(TAG_META_KEY, JSON.stringify(meta));
+	}
+	function getTagOrder(meta) {
+		return meta._order || [];
+	}
+	function saveTagOrder(meta, order) {
+		meta._order = order;
+		saveTagMeta(meta);
+	}
+
 	async function loadAndRenderTags() {
 		const tagsContainer = document.getElementById('tags-container');
 		try {
 			const response = await fetch('/api/tags');
 			if (!response.ok) throw new Error('Failed to fetch tags');
 			const tags = await response.json();
+			const meta = getTagMeta();
+			const order = getTagOrder(meta);
+
+			// 按保存的顺序排序，新标签排在末尾
+			if (order.length > 0) {
+				tags.sort((a, b) => {
+					const ia = order.indexOf(a.name);
+					const ib = order.indexOf(b.name);
+					if (ia === -1 && ib === -1) return 0;
+					if (ia === -1) return 1;
+					if (ib === -1) return -1;
+					return ia - ib;
+				});
+			}
+			// 更新 order 以包含任何新标签
+			const newOrder = tags.map(t => t.name);
+			saveTagOrder(meta, newOrder);
 
 			tagsContainer.innerHTML = '<ul></ul>';
 			const listElement = tagsContainer.querySelector('ul');
@@ -9434,10 +9583,15 @@ function toggleLang() {
 				listElement.innerHTML = '<li><div class="tag-item-placeholder">' + t('No tags yet') + '</div></li>';
 				return;
 			}
+			let dragSrc = null;
 			tags.forEach(tag => {
+				const tagColor = meta[tag.name]?.color || '';
 				const tagLi = document.createElement('li');
+				tagLi.draggable = true;
+				tagLi.dataset.tagName = tag.name;
 				tagLi.innerHTML = `
                     <div class='tag-item' data-tag-name='${tag.name}' title='${t('Filter by tag:')} #${tag.name}'>
+                        <span class='tag-color-dot' style='${tagColor ? 'background:' + tagColor : ''}'></span>
                         <span class='tag-label'>
                             <span class='tag-hash'>#</span>
                             <span class='tag-name'>${tag.name}</span>
@@ -9446,6 +9600,57 @@ function toggleLang() {
                         <button class='tag-delete-btn' title='${t('Delete tag')}' data-tag-name='${tag.name}'>×</button>
                     </div>
                 `;
+				const dot = tagLi.querySelector('.tag-color-dot');
+				dot.addEventListener('click', e => {
+					e.stopPropagation();
+					const existing = document.getElementById('tag-color-picker');
+					if (existing) existing.remove();
+					const input = document.createElement('input');
+					input.type = 'color';
+					input.id = 'tag-color-picker';
+					input.value = tagColor || '#3b82f6';
+					input.style.position = 'fixed';
+					input.style.opacity = '0';
+					input.style.pointerEvents = 'none';
+					input.addEventListener('input', () => {
+						const c = input.value;
+						dot.style.background = c;
+						meta[tag.name] = meta[tag.name] || {};
+						meta[tag.name].color = c;
+						saveTagMeta(meta);
+					});
+					input.addEventListener('blur', () => input.remove());
+					document.body.appendChild(input);
+					input.click();
+				});
+				// 拖拽事件
+				tagLi.addEventListener('dragstart', e => {
+					dragSrc = tagLi;
+					e.dataTransfer.effectAllowed = 'move';
+					tagLi.classList.add('dragging');
+				});
+				tagLi.addEventListener('dragend', () => {
+					tagLi.classList.remove('dragging');
+					if (dragSrc) {
+						const items = [...listElement.querySelectorAll('li[data-tag-name]')];
+						const newOrder = items.map(li => li.dataset.tagName);
+						saveTagOrder(meta, newOrder);
+					}
+					dragSrc = null;
+				});
+				tagLi.addEventListener('dragover', e => {
+					e.preventDefault();
+					e.dataTransfer.dropEffect = 'move';
+					if (dragSrc && dragSrc !== tagLi) {
+						const rect = tagLi.getBoundingClientRect();
+						const mid = rect.top + rect.height / 2;
+						if (e.clientY < mid) {
+							listElement.insertBefore(dragSrc, tagLi);
+						} else {
+							listElement.insertBefore(dragSrc, tagLi.nextSibling);
+						}
+					}
+				});
 				listElement.appendChild(tagLi);
 			});
 		} catch (error) {
@@ -9557,6 +9762,17 @@ function toggleLang() {
 		handleTabIndentation(event);
 		handleEditorShortcuts(event);
 		handleListAutoInsertion(event);
+		if (event.ctrlKey) {
+			let mdType = null;
+			if (event.key === 'b') mdType = 'bold';
+			if (event.key === 'i') mdType = 'italic';
+			if (event.key === 'k') mdType = 'link';
+			if (mdType) {
+				event.preventDefault();
+				const btn = document.querySelector('#main-editor-toolbar .toolbar-btn[data-md="' + mdType + '"]');
+				if (btn) btn.click();
+			}
+		}
 	});
 
 	// 通过事件委托为笔记卡片内的编辑框绑定
@@ -9565,6 +9781,39 @@ function toggleLang() {
 			handleTabIndentation(event);
 			handleEditorShortcuts(event);
 			handleListAutoInsertion(event);
+		}
+	});
+
+	// 全局键盘快捷键
+	document.addEventListener('keydown', e => {
+		// Ctrl+F: 聚焦搜索框
+		if (e.ctrlKey && e.key === 'f') {
+			e.preventDefault();
+			globalSearchInput.focus();
+			return;
+		}
+		// Ctrl+S: 保存笔记
+		if (e.ctrlKey && e.key === 's') {
+			if (document.activeElement === noteInput || document.activeElement?.closest('#note-form')) {
+				e.preventDefault();
+				document.getElementById('submit-btn').click();
+				return;
+			}
+			if (isFullscreenMode && document.activeElement === fsEditorTextarea) {
+				e.preventDefault();
+				fsSaveBtn.click();
+				return;
+			}
+			const editingTextarea = document.activeElement?.closest('.edit-textarea');
+			if (editingTextarea) {
+				e.preventDefault();
+				const noteEl = editingTextarea.closest('.note');
+				if (noteEl) {
+					const saveBtn = noteEl.querySelector('.save-edit');
+					if (saveBtn) saveBtn.click();
+				}
+				return;
+			}
 		}
 	});
 
