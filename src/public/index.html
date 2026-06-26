@@ -1603,10 +1603,6 @@
   }
 
   .tag-delete-btn {
-	position: absolute;
-	right: 4px;
-	top: 50%;
-	transform: translateY(-50%);
 	background: none;
 	border: none;
 	color: var(--text-secondary);
@@ -9293,7 +9289,7 @@ function toggleLang() {
                             <span class='tag-name'>${tag.name}</span>
                         </span>
                         <span class='tag-count'>${tag.count}</span>
-                        <button class='tag-delete-btn' data-tag-name='${tag.name}'>×</button>
+                        <button class='tag-delete-btn' title='${t('Delete tag')}' data-tag-name='${tag.name}'>×</button>
                     </div>
                 `;
 				listElement.appendChild(tagLi);
