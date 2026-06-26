@@ -1840,8 +1840,10 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	gap: 1rem;
-	flex-wrap: wrap;
+	gap: 0.75rem;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	overflow-y: hidden;
   }
 
   .toolbar-group-left, .toolbar-group-right {
@@ -2557,14 +2559,14 @@
 	background: none;
 	border: 1px solid transparent;
 	border-radius: 4px;
-	padding: 2px 8px;
+	padding: 2px 6px;
 	cursor: pointer;
 	font-size: 13px;
 	color: var(--text-secondary);
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	line-height: 1.6;
+	line-height: 1.4;
   }
   .toolbar-group-left .toolbar-btn:hover {
 	background: var(--border-color);
@@ -2572,9 +2574,9 @@
   }
   .toolbar-separator {
 	width: 1px;
-	height: 20px;
+	height: 16px;
 	background: var(--border-color);
-	margin: 0 4px;
+	margin: 0 2px;
 	flex-shrink: 0;
   }
 
