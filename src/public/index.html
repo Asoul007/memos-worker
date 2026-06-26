@@ -3860,7 +3860,8 @@
 					</div>
 				</div>
 
-				<div style="text-align: center; margin-bottom: 1rem;">
+				<div style="text-align: center; margin-bottom: 1rem; min-height: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+					<span id="share-qr-loading" class="spinner" style="display: none;"></span>
 					<img id="share-qr-code" style="width: 160px; height: 160px; border-radius: 8px; display: none;" alt="QR Code">
 				</div>
 
@@ -4993,6 +4994,8 @@ function toggleLang() {
 		currentPublicId = null;
 		const qrImg = document.getElementById('share-qr-code');
 		if (qrImg) qrImg.style.display = 'none';
+		const qrLoading = document.getElementById('share-qr-loading');
+		if (qrLoading) qrLoading.style.display = 'none';
 	}
 
 	closeShareModalBtn.addEventListener('click', closeShareModal);
@@ -5214,9 +5217,15 @@ function toggleLang() {
 					document.getElementById('share-display-link-input').value = data.displayUrl;
 					// 更新二维码
 					const qrImg = document.getElementById("share-qr-code");
+					const qrLoading = document.getElementById("share-qr-loading");
 					if (qrImg) {
+						if (qrLoading) qrLoading.style.display = "inline-block";
+						qrImg.style.display = "none";
+						qrImg.onload = () => {
+							if (qrLoading) qrLoading.style.display = "none";
+							qrImg.style.display = "inline-block";
+						};
 						qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" + encodeURIComponent(data.displayUrl);
-						qrImg.style.display = "inline-block";
 					}
 					document.getElementById('share-raw-link-input').value = data.rawUrl;
 					loader.style.display = 'none';
