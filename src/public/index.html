@@ -4706,6 +4706,11 @@ const LANG = {
     "Full data with metadata, tags and files info": "包含元数据、标签和文件信息的完整 JSON 数据",
     "All notes combined in one .md file": "所有笔记合并为一个 .md 文件",
     "Individual .md files with frontmatter in a ZIP": "每篇笔记独立 .md 文件，含元数据，ZIP 打包",
+    "Memos Export": "笔记导出",
+    "Exported at": "导出时间",
+    "Total": "共",
+    "Updated": "更新",
+    "Favorited": "已收藏",
   },
   en: {
     "Home": "Home",
@@ -6710,21 +6715,51 @@ function toggleLang() {
 			});
 	}
 
-	function triggerExportSingleMD() {
+		function triggerExportSingleMD() {
 		closeExportModal();
-		fetch('/api/notes/export?format=markdown')
+		fetch('/api/notes/export?format=json')
 			.then(res => {
-				if (!res.ok) return res.text().then(t => { throw new Error(t || 'Export failed'); });
-				return res.blob();
+				if (!res.ok) return res.text().then(function(t) { throw new Error(t || 'Export failed'); });
+				return res.json();
 			})
-			.then(blob => downloadBlob(blob, 'memos-export.md'))
-			.catch(err => {
+			.then(function(data) {
+				if (!data.notes || data.notes.length === 0) {
+					showToast(t('No notes to export'), 'error');
+					return;
+				}
+				function safeDate(ts) {
+					if (ts == null) return null;
+					var ms = typeof ts === 'string' ? Number(ts.replace(/\.0+$/, '')) : Number(ts);
+					if (isNaN(ms) || ms <= 0) return null;
+					try { return new Date(ms); } catch(e) { return null; }
+				}
+				var md = '# ' + t('Memos Export') + '\n\n';
+				md += '- ' + t('Exported at') + ': ' + new Date().toISOString() + '\n';
+				md += '- ' + t('Total') + ': ' + data.notes.length + ' ' + t('notes') + '\n\n---\n\n';
+				for (var i = 0; i < data.notes.length; i++) {
+					var note = data.notes[i];
+					var cDate = safeDate(note.created_at);
+					var uDate = safeDate(note.updated_at);
+					var createdDate = cDate ? cDate.toISOString().split('T')[0] : 'unknown';
+					var updatedDate = uDate ? uDate.toISOString().split('T')[0] : 'unknown';
+					md += '## ' + createdDate + '\n\n';
+					md += '**' + t('Updated') + ':** ' + updatedDate + '\n\n';
+					if (note.tags && note.tags.length > 0) {
+						md += '**' + t('Tags') + ':** ' + note.tags.map(function(tag) { return '#' + tag.name; }).join(', ') + '\n\n';
+					}
+					if (note.is_pinned) md += '*' + t('Pinned') + '*\n\n';
+					if (note.is_favorited) md += '*' + t('Favorited') + '*\n\n';
+					md += (note.content || '') + '\n\n---\n\n';
+				}
+				return new Blob([md], { type: 'text/markdown;charset=utf-8' });
+			})
+			.then(function(blob) { downloadBlob(blob, 'memos-export.md'); })
+			.catch(function(err) {
 				console.error('Export error:', err);
 				showToast(t('Export failed') + ': ' + err.message, 'error');
 			});
 	}
-
-	function triggerExportMDZip() {
+function triggerExportMDZip() {
 		closeExportModal();
 		fetch('/api/notes/export?format=json')
 			.then(res => {
@@ -10094,4 +10129,12 @@ function toggleLang() {
 	// });
 </script>
     "No notes to export": "No notes to export",
+    "Memos Export": "Memos Export",
     "Export failed": "Export failed",
+    "Exported at": "Exported at",
+    "Total": "Total",
+    "notes": "notes",
+    "Updated": "Updated",
+    "Tags": "Tags",
+    "Pinned": "Pinned",
+    "Favorited": "Favorited",
