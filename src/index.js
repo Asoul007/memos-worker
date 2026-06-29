@@ -2247,8 +2247,8 @@ async function handleExportNotes(request, env) {
 			md += `- Total: ${notes.length} notes\n\n---\n\n`;
 			for (const note of notes) {
 				let createdDate = 'unknown', updatedDate = 'unknown';
-				try { createdDate = new Date(note.created_at).toISOString().split('T')[0]; } catch(e) {}
-				try { updatedDate = new Date(note.updated_at).toISOString().split('T')[0]; } catch(e) {}
+				try { var ts = typeof note.created_at === 'string' ? Number(note.created_at.replace(/\.0+$/, '')) : Number(note.created_at); if (!isNaN(ts) && ts > 0) createdDate = new Date(ts).toISOString().split('T')[0]; } catch(e) {}
+				try { var ts = typeof note.updated_at === 'string' ? Number(note.updated_at.replace(/\.0+$/, '')) : Number(note.updated_at); if (!isNaN(ts) && ts > 0) updatedDate = new Date(ts).toISOString().split('T')[0]; } catch(e) {}
 				md += `## ${createdDate}\n\n`;
 				md += `**Updated:** ${updatedDate}\n\n`;
 				if (note.tags.length > 0) {
