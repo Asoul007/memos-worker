@@ -2246,8 +2246,9 @@ async function handleExportNotes(request, env) {
 			md += `- Exported at: ${new Date().toISOString()}\n`;
 			md += `- Total: ${notes.length} notes\n\n---\n\n`;
 			for (const note of notes) {
-				const createdDate = new Date(note.created_at).toISOString().split('T')[0];
-				const updatedDate = new Date(note.updated_at).toISOString().split('T')[0];
+				let createdDate = 'unknown', updatedDate = 'unknown';
+				try { createdDate = new Date(note.created_at).toISOString().split('T')[0]; } catch(e) {}
+				try { updatedDate = new Date(note.updated_at).toISOString().split('T')[0]; } catch(e) {}
 				md += `## ${createdDate}\n\n`;
 				md += `**Updated:** ${updatedDate}\n\n`;
 				if (note.tags.length > 0) {

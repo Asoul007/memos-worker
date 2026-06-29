@@ -4693,6 +4693,7 @@ const LANG = {
 
     "Expires in": "过期时间",
     "QR Code": "二维码",
+    "Export": "导出",
     "Export Notes": "导出笔记",
     "Export all memos as JSON or Markdown file.": "将所有笔记导出为 JSON 或 Markdown 文件。",
     "Export as JSON": "导出为 JSON",
@@ -6696,7 +6697,7 @@ function toggleLang() {
 		closeExportModal();
 		fetch('/api/notes/export?format=json')
 			.then(res => {
-				if (!res.ok) throw new Error('Export failed');
+				if (!res.ok) return res.text().then(t => { throw new Error(t || 'Export failed'); });
 				return res.blob();
 			})
 			.then(blob => downloadBlob(blob, 'memos-export.json'))
@@ -6710,7 +6711,7 @@ function toggleLang() {
 		closeExportModal();
 		fetch('/api/notes/export?format=markdown')
 			.then(res => {
-				if (!res.ok) throw new Error('Export failed');
+				if (!res.ok) return res.text().then(t => { throw new Error(t || 'Export failed'); });
 				return res.blob();
 			})
 			.then(blob => downloadBlob(blob, 'memos-export.md'))
@@ -6724,7 +6725,7 @@ function toggleLang() {
 		closeExportModal();
 		fetch('/api/notes/export?format=json')
 			.then(res => {
-				if (!res.ok) throw new Error('Export failed');
+				if (!res.ok) return res.text().then(t => { throw new Error(t || 'Export failed'); });
 				return res.json();
 			})
 			.then(data => {
