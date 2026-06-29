@@ -5570,7 +5570,34 @@ function toggleLang() {
 			});
 	}
 
+	
 	document.addEventListener('click', (e) => {
+		// 打开导出弹框
+		if (e.target.id === 'open-export-modal-btn') {
+			openExportModal();
+			return;
+		}
+		// 关闭导出弹框
+		if (e.target.id === 'close-export-modal-btn') {
+			closeExportModal();
+			return;
+		}
+		// 点击遮罩层关闭
+		const exportOverlay = document.getElementById('export-modal-overlay');
+		if (e.target === exportOverlay) {
+			closeExportModal();
+			return;
+		}
+		// 点击选项卡片导出
+		const optionCard = e.target.closest('.export-option-card');
+		if (optionCard && exportOverlay.classList.contains('visible')) {
+			const format = optionCard.dataset.exportFormat;
+			if (format === 'json') triggerExportJSON();
+			else if (format === 'single-md') triggerExportSingleMD();
+			else if (format === 'md-zip') triggerExportMDZip();
+		}
+	});
+document.addEventListener('click', (e) => {
 		if (!moreActionsContainer.contains(e.target)) {
 			if (isMenuPinned) {
 				isMenuPinned = false;
