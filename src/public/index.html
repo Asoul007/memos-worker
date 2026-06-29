@@ -4711,6 +4711,11 @@ const LANG = {
     "Total": "共",
     "Updated": "更新",
     "Favorited": "已收藏",
+    "created": "创建时间",
+    "updated": "更新时间",
+    "tags": "标签",
+    "pinned": "置顶",
+    "favorited": "收藏",
   },
   en: {
     "Home": "Home",
@@ -6747,18 +6752,125 @@ function toggleLang() {
 					if (note.tags && note.tags.length > 0) {
 						md += '**' + t('Tags') + ':** ' + note.tags.map(function(tag) { return '#' + tag.name; }).join(', ') + '\n\n';
 					}
-					if (note.is_pinned) md += '*' + t('Pinned') + '*\n\n';
-					if (note.is_favorited) md += '*' + t('Favorited') + '*\n\n';
-					md += (note.content || '') + '\n\n---\n\n';
-				}
-				return new Blob([md], { type: 'text/markdown;charset=utf-8' });
+					if (note.is_pinned) md += t('favorited') + ': true\n';
+					md += '---\n\n';
+					md += note.content || '';
+					zip.file(safeName, md);
+				});
+				return zip.generateAsync({ type: 'blob' });
 			})
-			.then(function(blob) { downloadBlob(blob, 'memos-export.md'); })
-			.catch(function(err) {
+			.then(blob => downloadBlob(blob, 'memos-export.zip'))
+			.catch(err => {
 				console.error('Export error:', err);
 				showToast(t('Export failed') + ': ' + err.message, 'error');
 			});
 	}
+
+	document.addEventListener('click', (e) => {
+		// 打开导出弹框
+		if (e.target.id === 'open-export-modal-btn') {
+			openExportModal();
+			return;
+		}
+		// 关闭导出弹框
+		if (e.target.id === 'close-export-modal-btn') {
+			closeExportModal();
+			return;
+		}
+		// 点击遮罩层关闭
+		const exportOverlay = document.getElementById('export-modal-overlay');
+		if (e.target === exportOverlay) {
+			closeExportModal();
+			return;
+		}
+		// 点击选项卡片导出
+		const optionCard = e.target.closest('.export-option-card');
+		if (optionCard && exportOverlay.classList.contains('visible')) {
+			const format = optionCard.dataset.exportFormat;
+			if (format === 'json') triggerExportJSON();
+			else if (format === 'single-md') triggerExportSingleMD();
+			else if (format === 'md-zip') triggerExportMDZip();
+		}
+	});
+
+	// --- 为瀑布流菜单的按钮添加事件委托 ---
+/*	waterfallPopoverMenu.addEventListener('click', async (e) => {
+		const actionButton = e.target.closest('.icon-btn');
+		if (!actionButton) return;
+		const action = actionButton.dataset.action;
+		const noteId = waterfallPopoverMenu.dataset.noteId;
+		if (!noteId) return;
+		// 先隐藏菜单，提供即时反馈
+		hideWaterfallPopover();
+
+		const noteElement = notesContainer.querySelector(`.note[data-id="${noteId}"]`);
+
+		switch (action) {
+			case 'view': {
+				const noteData = allNotesCache.find(n => n.id === parseInt(noteId, 10));
+				if (noteData) {
+					// 调用全屏编辑器，并定制其行为
+					openFullscreenEditor(noteData.content, noteId, {
+						defaultViewMode: 'split'
+					});
+				}
+				break;
+			}
+
+			case 'delete': {
+				if (!noteElement) return;
+				const confirmed = await showCustomConfirm(t('Are you sure you want to delete this note?'));
+				if (!confirmed) return;
+
+				// 复用现有的删除逻辑
+				waterfallObserver.unobserve(noteElement);
+				try {
+					await fetch(`/api/notes/${noteId}`, { method: 'DELETE' });
+					noteElement.remove();
+				} catch (error) {
+					waterfallObserver.observe(noteElement);
+					showCustomAlert(error.message, 'error');
+				}
+				break;
+			}
+		}
+	});
+	waterfallPopoverMenu.addEventListener('mouseenter', () => {
+		clearTimeout(waterfallPopoverHideTimer);
+	});
+
+	waterfallPopoverMenu.addEventListener('mouseleave', () => {
+		hideWaterfallPopover();
+	});*/
+
+	/*function showWaterfallPopover(targetButton, noteId) {
+		clearTimeout(waterfallPopoverHideTimer);
+		if (waterfallPopoverMenu.classList.contains('visible') && activePopoverNoteId === noteId) {
+			return;
+		}
+		// 获取按钮的位置信息，以便定位菜单
+		const btnRect = targetButton.getBoundingClientRect();
+		// top: 按钮底部 + 页面滚动距离 + 一点间距
+		// left: 按钮左侧 - 菜单宽度 + 按钮宽度 (使其右对齐)
+		waterfallPopoverMenu.style.top = `${btnRect.bottom + 5}px`;
+		waterfallPopoverMenu.style.left = `${btnRect.right - waterfallPopoverMenu.offsetWidth}px`;
+		// 存储当前笔记ID，并显示菜单
+		activePopoverNoteId = noteId;
+		waterfallPopoverMenu.dataset.noteId = noteId; // 将ID存到菜单上，方便后续操作
+		waterfallPopoverMenu.classList.add('visible');
+	}*/
+
+	/**
+	 * 隐藏“更多”操作菜单
+	 */
+	// function hideWaterfallPopover() {
+	// 	clearTimeout(waterfallPopoverHideTimer);
+	// 	waterfallPopoverHideTimer = setTimeout(() => {
+	// 		waterfallPopoverMenu.classList.remove('visible');
+	// 		activePopoverNoteId = null;
+	// 	}, 200);
+	// }
+
 function triggerExportMDZip() {
 		closeExportModal();
 		fetch('/api/notes/export?format=json')
@@ -6787,11 +6899,11 @@ function triggerExportMDZip() {
 					var safeName = (createdDate !== 'unknown' ? createdDate : 'note') + '-' + firstLine.replace(/[\s<>:"/\\|?*\u0000-\u001f]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 80) + '.md';
 					var tags = note.tags && note.tags.length > 0 ? note.tags.map(function(t) { return t.name; }) : [];
 					var md = '---\n';
-					md += 'created: ' + (cDate ? cDate.toISOString() : 'unknown') + '\n';
-					md += 'updated: ' + updatedDate + '\n';
-					if (tags.length > 0) md += 'tags: [' + tags.join(', ') + ']\n';
-					if (note.is_pinned) md += 'pinned: true\n';
-					if (note.is_favorited) md += 'favorited: true\n';
+					md += t('created') + ': ' + (cDate ? cDate.toISOString() : 'unknown') + '\n';
+					md += t('updated') + ': ' + updatedDate + '\n';
+					if (tags.length > 0) md += t('tags') + ': ['' + tags.join(', ') + ']\n';
+					if (note.is_pinned) md += t('pinned') + ': true\n';
+					if (note.is_favorited) md += t('favorited') + ': true\n';
 					md += '---\n\n';
 					md += note.content || '';
 					zip.file(safeName, md);
@@ -10137,4 +10249,9 @@ function triggerExportMDZip() {
     "Updated": "Updated",
     "Tags": "Tags",
     "Pinned": "Pinned",
+    "created": "created",
     "Favorited": "Favorited",
+    "updated": "updated",
+    "tags": "tags",
+    "pinned": "pinned",
+    "favorited": "favorited",
