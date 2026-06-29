@@ -7,6 +7,7 @@
 	<title data-i18n="人间自留地">人间自留地</title>
 	<script src='https://unpkg.com/turndown@7.2.1/dist/turndown.js'></script>
 	<script src='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js'></script>
+		<script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'></script>
 	<link id='hljs-light-theme' rel='stylesheet'
 				href='https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css'>
 	<link id='hljs-dark-theme' rel='stylesheet'
@@ -1087,6 +1088,62 @@
 	gap: 1rem;
 	margin-top: 1.5rem;
   }
+  .export-options {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+  }
+
+  .export-option-card {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 1rem;
+	border: 1px solid var(--border-color);
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	background: var(--bg-color-secondary);
+  }
+
+  .export-option-card:hover {
+	border-color: var(--accent-color);
+	background: var(--hover-bg);
+	box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+
+  .export-option-card:active {
+	transform: scale(0.98);
+  }
+
+  .export-option-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 48px;
+	height: 48px;
+	border-radius: 10px;
+	background: var(--accent-color);
+	color: #fff;
+	flex-shrink: 0;
+  }
+
+  .export-option-info {
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+  }
+
+  .export-option-info strong {
+	font-size: 1rem;
+  }
+
+  .export-option-desc {
+	font-size: 0.8rem;
+	color: var(--text-secondary);
+	line-height: 1.3;
+  }
+
 
   #custom-confirm-message, #custom-alert-message {
 	color: var(--text-color);
@@ -3869,6 +3926,16 @@
 					<span id='waterfall-width-value'>320px</span>
 				</div>
 			</div>
+
+			<div class='setting-group'>
+				<h4 data-i18n='Export Notes'>Export Notes</h4>
+				<div class='setting-item'>
+					<label data-i18n='Export all memos as JSON or Markdown file.'>Export all memos as JSON or Markdown file.</label>
+					<div class='setting-buttons-group' style='margin-top: 0.25rem;'>
+						<button id='open-export-modal-btn' class='btn btn-secondary btn-sm' data-i18n='Export'>Export</button>
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -3943,6 +4010,45 @@
 		</div>
 		<div class='custom-modal-actions' style="justify-content: flex-end;">
 			<button id='share-link-close-btn' class='btn btn-secondary' data-i18n="Close">Close</button>
+		</div>
+	</div>
+</div>
+
+<!-- Export Modal -->
+<div id='export-modal-overlay' class='custom-modal-overlay'>
+	<div id='export-modal-box' class='custom-modal-box' style='max-width: 500px;'>
+		<header style='display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;'>
+			<h3 style='margin: 0;' data-i18n='Export Notes'>Export Notes</h3>
+			<button id='close-export-modal-btn' class='icon-btn' style='font-size: 1.5rem;'>&times;</button>
+		</header>
+		<div class='export-options'>
+			<div class='export-option-card' data-export-format='json'>
+				<div class='export-option-icon'>
+					<svg xmlns='http://www.w3.org/2000/svg' height='32px' viewBox='0 0 24 24' width='32px' fill='currentColor'><path d='M0 0h24v24H0V0z' fill='none'/><path d='M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z'/></svg>
+				</div>
+				<div class='export-option-info'>
+					<strong data-i18n='Export as JSON'>Export as JSON</strong>
+					<span class='export-option-desc' data-i18n='Full data with metadata, tags and files info'>Full data with metadata, tags and files info</span>
+				</div>
+			</div>
+			<div class='export-option-card' data-export-format='single-md'>
+				<div class='export-option-icon'>
+					<svg xmlns='http://www.w3.org/2000/svg' height='32px' viewBox='0 0 24 24' width='32px' fill='currentColor'><path d='M0 0h24v24H0V0z' fill='none'/><path d='M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 20V4h7v5h5v11H6z'/></svg>
+				</div>
+				<div class='export-option-info'>
+					<strong data-i18n='Export as Single Markdown'>Export as Single Markdown</strong>
+					<span class='export-option-desc' data-i18n='All notes combined in one .md file'>All notes combined in one .md file</span>
+				</div>
+			</div>
+			<div class='export-option-card' data-export-format='md-zip'>
+				<div class='export-option-icon'>
+					<svg xmlns='http://www.w3.org/2000/svg' height='32px' viewBox='0 0 24 24' width='32px' fill='currentColor'><path d='M0 0h24v24H0V0z' fill='none'/><path d='M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10zM8 10h2v2H8v-2zm0 4h2v2H8v-2zm4-4h2v2h-2v-2zm0 4h2v2h-2v-2zm4-4h2v2h-2v-2zm0 4h2v2h-2v-2z'/></svg>
+				</div>
+				<div class='export-option-info'>
+					<strong data-i18n='Export as MD Files + ZIP'>Export as MD Files + ZIP</strong>
+					<span class='export-option-desc' data-i18n='Individual .md files with frontmatter in a ZIP'>Individual .md files with frontmatter in a ZIP</span>
+				</div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -4587,6 +4693,15 @@ const LANG = {
 
     "Expires in": "过期时间",
     "QR Code": "二维码",
+    "Export Notes": "导出笔记",
+    "Export all memos as JSON or Markdown file.": "将所有笔记导出为 JSON 或 Markdown 文件。",
+    "Export as JSON": "导出为 JSON",
+    "Export as Markdown": "导出为 Markdown",
+    "Export as Single Markdown": "导出为单个 Markdown 文件",
+    "Export as MD Files + ZIP": "导出为 MD 文件 + ZIP",
+    "Full data with metadata, tags and files info": "包含元数据、标签和文件信息的完整 JSON 数据",
+    "All notes combined in one .md file": "所有笔记合并为一个 .md 文件",
+    "Individual .md files with frontmatter in a ZIP": "每篇笔记独立 .md 文件，含元数据，ZIP 打包",
   },
   en: {
     "Home": "Home",
@@ -4793,6 +4908,15 @@ const LANG = {
     "No headings found.": "No headings found.",
     "Expires in": "Expires in",
     "QR Code": "QR Code",
+    "Export Notes": "Export Notes",
+    "Export all memos as JSON or Markdown file.": "Export all memos as JSON or Markdown file.",
+    "Export as JSON": "Export as JSON",
+    "Export as Markdown": "Export as Markdown",
+    "Export as Single Markdown": "Export as Single Markdown",
+    "Export as MD Files + ZIP": "Export as MD Files + ZIP",
+    "Full data with metadata, tags and files info": "Full data with metadata, tags and files info",
+    "All notes combined in one .md file": "All notes combined in one .md file",
+    "Individual .md files with frontmatter in a ZIP": "Individual .md files with frontmatter in a ZIP",
   }
 };
 function t(key) { return LANG[currentLang] && LANG[currentLang][key] !== undefined ? LANG[currentLang][key] : key; }
@@ -6544,9 +6668,123 @@ function toggleLang() {
 		applySettings();
 	}
 
+	// --- 导出弹框事件 ---
+	function closeExportModal() {
+		const modal = document.getElementById('export-modal-overlay');
+		modal.classList.remove('visible');
+		modal.querySelector('.custom-modal-box').classList.remove('active');
+	}
 
-	// --- 为瀑布流菜单的按钮添加事件委托 ---
-/*	waterfallPopoverMenu.addEventListener('click', async (e) => {
+	function openExportModal() {
+		const modal = document.getElementById('export-modal-overlay');
+		modal.classList.add('visible');
+		modal.querySelector('.custom-modal-box').classList.add('active');
+	}
+
+	function downloadBlob(blob, filename) {
+		const a = document.createElement('a');
+		a.href = URL.createObjectURL(blob);
+		a.download = filename;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(a.href);
+		showToast("Export completed: " + filename + " downloaded", "success");
+	}
+
+	function triggerExportJSON() {
+		closeExportModal();
+		fetch('/api/notes/export?format=json')
+			.then(res => {
+				if (!res.ok) throw new Error('Export failed');
+				return res.blob();
+			})
+			.then(blob => downloadBlob(blob, 'memos-export.json'))
+			.catch(err => {
+				console.error('Export error:', err);
+				showToast('Export failed: ' + err.message, 'error');
+			});
+	}
+
+	function triggerExportSingleMD() {
+		closeExportModal();
+		fetch('/api/notes/export?format=markdown')
+			.then(res => {
+				if (!res.ok) throw new Error('Export failed');
+				return res.blob();
+			})
+			.then(blob => downloadBlob(blob, 'memos-export.md'))
+			.catch(err => {
+				console.error('Export error:', err);
+				showToast('Export failed: ' + err.message, 'error');
+			});
+	}
+
+	function triggerExportMDZip() {
+		closeExportModal();
+		fetch('/api/notes/export?format=json')
+			.then(res => {
+				if (!res.ok) throw new Error('Export failed');
+				return res.json();
+			})
+			.then(data => {
+				if (!data.notes || data.notes.length === 0) {
+					showToast('No notes to export', 'error');
+					return;
+				}
+				const zip = new JSZip();
+				data.notes.forEach(note => {
+					const createdDate = new Date(note.created_at).toISOString().split('T')[0];
+					const firstLine = (note.content || '').split('\n')[0].replace(/[#*\`>]/g, '').trim().substring(0, 50) || 'untitled';
+					const safeName = createdDate + '-' + firstLine.replace(/[\s<>:"/\\|?*\u0000-\u001f]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 80) + '.md';
+					const tags = note.tags && note.tags.length > 0 ? note.tags.map(t => t.name) : [];
+					let md = '---\n';
+					md += "created: " + new Date(note.created_at).toISOString() + '\n';
+					md += "updated: " + new Date(note.updated_at).toISOString() + '\n';
+					if (tags.length > 0) md += "tags: [" + tags.join(', ') + "]\n";
+					if (note.is_pinned) md += "pinned: true\n";
+					if (note.is_favorited) md += "favorited: true\n";
+					md += '---\n\n';
+					md += note.content || '';
+					zip.file(safeName, md);
+				});
+				return zip.generateAsync({ type: 'blob' });
+			})
+			.then(blob => downloadBlob(blob, 'memos-export.zip'))
+			.catch(err => {
+				console.error('Export error:', err);
+				showToast('Export failed: ' + err.message, 'error');
+			});
+	}
+
+	document.addEventListener('click', (e) => {
+		// 打开导出弹框
+		if (e.target.id === 'open-export-modal-btn') {
+			openExportModal();
+			return;
+		}
+		// 关闭导出弹框
+		if (e.target.id === 'close-export-modal-btn') {
+			closeExportModal();
+			return;
+		}
+		// 点击遮罩层关闭
+		const exportOverlay = document.getElementById('export-modal-overlay');
+		if (e.target === exportOverlay) {
+			closeExportModal();
+			return;
+		}
+		// 点击选项卡片导出
+		const optionCard = e.target.closest('.export-option-card');
+		if (optionCard && exportOverlay.classList.contains('visible')) {
+			const format = optionCard.dataset.exportFormat;
+			if (format === 'json') triggerExportJSON();
+			else if (format === 'single-md') triggerExportSingleMD();
+			else if (format === 'md-zip') triggerExportMDZip();
+		}
+	});
+
+	// --- 为瀑布流菜单的按钮添加事件委托 ---/*	waterfallPopoverMenu.addEventListener('click', async (e) => {
 		const actionButton = e.target.closest('.icon-btn');
 		if (!actionButton) return;
 		const action = actionButton.dataset.action;

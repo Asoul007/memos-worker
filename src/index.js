@@ -169,6 +169,9 @@ async function handleApiRequest(request, env) {
 	if (pathname === '/api/notes/timeline') {
 		return handleTimelineRequest(request, env);
 	}
+	if (pathname === '/api/notes/export') {
+		return handleExportNotes(request, env);
+	}
 	if (pathname === '/api/search') {
 		return handleSearchRequest(request, env);
 	}
@@ -2179,6 +2182,94 @@ async function handleMergeNotes(request, env) {
 	} catch (e) {
 		console.error("Merge Notes Error:", e.message, e.cause);
 		return jsonResponse({ error: 'Database or R2 error during merge', message: e.message }, 500);
+	}
+}
+
+/**
+ * 处理导出请求：JSON 或 Markdown 格式
+ */
+async function handleExportNotes(request, env) {
+	const db = env.DB;
+	try {
+		const { searchParams } = new URL(request.url);
+		const format = searchParams.get('format') || 'json';
+
+		// 查询所有非归档笔记
+		const { results: notes } = await db.prepare(
+			"SELECT * FROM notes WHERE is_archived = '0' ORDER BY updated_at DESC"
+		).all();
+
+		if (!notes || notes.length === 0) {
+			if (format === 'markdown') {
+				return new Response('# Memos Export\n\nNo notes found.', {
+					headers: { 'Content-Type': 'text/markdown; charset=utf-8', 'Content-Disposition': 'attachment; filename="memos-export.md"' }
+				});
+			}
+			return jsonResponse({ notes: [], exportedAt: new Date().toISOString() });
+		}
+
+		// 批量查询所有笔记的标签
+		const noteIds = notes.map(n => n.id);
+		const placeholders = noteIds.map(() => '?').join(',');
+		const { results: tagResults } = await db.prepare(`
+			SELECT nt.note_id, t.name, t.color
+			FROM note_tags nt
+			JOIN tags t ON nt.tag_id = t.id
+			WHERE nt.note_id IN (${placeholders})
+		`).bind(...noteIds).all();
+
+		// 构建标签映射
+		const tagsByNoteId = {};
+		if (tagResults) {
+			for (const row of tagResults) {
+				if (!tagsByNoteId[row.note_id]) tagsByNoteId[row.note_id] = [];
+				tagsByNoteId[row.note_id].push({ name: row.name, color: row.color });
+			}
+		}
+
+		// 解析 JSON 字段并附加标签
+		for (const note of notes) {
+			if (typeof note.files === 'string') {
+				try { note.files = JSON.parse(note.files); } catch (e) { note.files = []; }
+			}
+			if (typeof note.pics === 'string') {
+				try { note.pics = JSON.parse(note.pics); } catch (e) { note.pics = []; }
+			}
+			if (typeof note.videos === 'string') {
+				try { note.videos = JSON.parse(note.videos); } catch (e) { note.videos = []; }
+			}
+			note.tags = tagsByNoteId[note.id] || [];
+		}
+
+		if (format === 'markdown') {
+			let md = '# Memos Export\n\n';
+			md += `- Exported at: ${new Date().toISOString()}\n`;
+			md += `- Total: ${notes.length} notes\n\n---\n\n`;
+			for (const note of notes) {
+				const createdDate = new Date(note.created_at).toISOString().split('T')[0];
+				const updatedDate = new Date(note.updated_at).toISOString().split('T')[0];
+				md += `## ${createdDate}\n\n`;
+				md += `**Updated:** ${updatedDate}\n\n`;
+				if (note.tags.length > 0) {
+					md += `**Tags:** ${note.tags.map(t => `#${t.name}`).join(', ')}\n\n`;
+				}
+				if (note.is_pinned) md += '*Pinned*\n\n';
+				if (note.is_favorited) md += '*Favorited*\n\n';
+				md += `${note.content}\n\n---\n\n`;
+			}
+			return new Response(md, {
+				headers: {
+					'Content-Type': 'text/markdown; charset=utf-8',
+					'Content-Disposition': 'attachment; filename="memos-export.md"'
+				}
+			});
+		}
+
+		// 默认返回 JSON
+		return jsonResponse({ notes, exportedAt: new Date().toISOString(), total: notes.length });
+	} catch (e) {
+		console.error("Export Error:", e.message);
+		return jsonResponse({ error: 'Export Error', message: e.message }, 500);
 	}
 }
 
