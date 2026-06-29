@@ -4694,6 +4694,9 @@ const LANG = {
     "Expires in": "过期时间",
     "QR Code": "二维码",
     "Export": "导出",
+    "Export completed": "导出完成",
+    "Export failed": "导出失败",
+    "No notes to export": "没有笔记可导出",
     "Export Notes": "导出笔记",
     "Export all memos as JSON or Markdown file.": "将所有笔记导出为 JSON 或 Markdown 文件。",
     "Export as JSON": "导出为 JSON",
@@ -6690,7 +6693,7 @@ function toggleLang() {
 		a.click();
 		document.body.removeChild(a);
 		URL.revokeObjectURL(a.href);
-		showToast("Export completed: " + filename + " downloaded", "success");
+		showToast(t("Export completed") + " " + filename, "success");
 	}
 
 	function triggerExportJSON() {
@@ -6703,7 +6706,7 @@ function toggleLang() {
 			.then(blob => downloadBlob(blob, 'memos-export.json'))
 			.catch(err => {
 				console.error('Export error:', err);
-				showToast('Export failed: ' + err.message, 'error');
+				showToast(t('Export failed') + ': ' + err.message, 'error');
 			});
 	}
 
@@ -6717,7 +6720,7 @@ function toggleLang() {
 			.then(blob => downloadBlob(blob, 'memos-export.md'))
 			.catch(err => {
 				console.error('Export error:', err);
-				showToast('Export failed: ' + err.message, 'error');
+				showToast(t('Export failed') + ': ' + err.message, 'error');
 			});
 	}
 
@@ -6730,18 +6733,19 @@ function toggleLang() {
 			})
 			.then(data => {
 				if (!data.notes || data.notes.length === 0) {
-					showToast('No notes to export', 'error');
+					showToast(t('No notes to export'), 'error');
 					return;
 				}
 				const zip = new JSZip();
 				data.notes.forEach(note => {
-					const createdDate = new Date(note.created_at).toISOString().split('T')[0];
+					let createdDate = 'unknown';
+					try { createdDate = new Date(note.created_at).toISOString().split('T')[0]; } catch(e) {}
 					const firstLine = (note.content || '').split('\n')[0].replace(/[#*\`>]/g, '').trim().substring(0, 50) || 'untitled';
 					const safeName = createdDate + '-' + firstLine.replace(/[\s<>:"/\\|?*\u0000-\u001f]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 80) + '.md';
 					const tags = note.tags && note.tags.length > 0 ? note.tags.map(t => t.name) : [];
 					let md = '---\n';
-					md += "created: " + new Date(note.created_at).toISOString() + '\n';
-					md += "updated: " + new Date(note.updated_at).toISOString() + '\n';
+					md += "created: " + (createdDate !== 'unknown' ? new Date(note.created_at).toISOString() : 'unknown') + '\n';
+					md += "updated: " + (() => { try { return new Date(note.updated_at).toISOString(); } catch(e) { return 'unknown'; } })() + '\n';
 					if (tags.length > 0) md += "tags: [" + tags.join(', ') + "]\n";
 					if (note.is_pinned) md += "pinned: true\n";
 					if (note.is_favorited) md += "favorited: true\n";
@@ -6754,7 +6758,7 @@ function toggleLang() {
 			.then(blob => downloadBlob(blob, 'memos-export.zip'))
 			.catch(err => {
 				console.error('Export error:', err);
-				showToast('Export failed: ' + err.message, 'error');
+				showToast(t('Export failed') + ': ' + err.message, 'error');
 			});
 	}
 
@@ -10081,3 +10085,5 @@ function toggleLang() {
 		handleEditorLayout();
 	// });
 </script>
+    "No notes to export": "No notes to export",
+    "Export failed": "Export failed",
