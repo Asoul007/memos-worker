@@ -6738,17 +6738,25 @@ function toggleLang() {
 				}
 				const zip = new JSZip();
 				data.notes.forEach(note => {
-					let createdDate = 'unknown';
-					try { createdDate = new Date(note.created_at).toISOString().split('T')[0]; } catch(e) {}
-					const firstLine = (note.content || '').split('\n')[0].replace(/[#*\`>]/g, '').trim().substring(0, 50) || 'untitled';
-					const safeName = createdDate + '-' + firstLine.replace(/[\s<>:"/\\|?*\u0000-\u001f]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 80) + '.md';
-					const tags = note.tags && note.tags.length > 0 ? note.tags.map(t => t.name) : [];
-					let md = '---\n';
-					md += "created: " + (createdDate !== 'unknown' ? new Date(note.created_at).toISOString() : 'unknown') + '\n';
-					md += "updated: " + (() => { try { return new Date(note.updated_at).toISOString(); } catch(e) { return 'unknown'; } })() + '\n';
-					if (tags.length > 0) md += "tags: [" + tags.join(', ') + "]\n";
-					if (note.is_pinned) md += "pinned: true\n";
-					if (note.is_favorited) md += "favorited: true\n";
+					function safeDate(ts) {
+						if (ts == null) return null;
+						var ms = typeof ts === 'string' ? Number(ts.replace(/\.0+$/, '')) : Number(ts);
+						if (isNaN(ms) || ms <= 0) return null;
+						try { return new Date(ms); } catch(e) { return null; }
+					}
+					var cDate = safeDate(note.created_at);
+					var uDate = safeDate(note.updated_at);
+					var createdDate = cDate ? cDate.toISOString().split('T')[0] : 'unknown';
+					var updatedDate = uDate ? uDate.toISOString() : 'unknown';
+					var firstLine = (note.content || '').split('\n')[0].replace(/[#*\\`>]/g, '').trim().substring(0, 50) || 'untitled';
+					var safeName = (createdDate !== 'unknown' ? createdDate : 'note') + '-' + firstLine.replace(/[\s<>:"/\\|?*\u0000-\u001f]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '').substring(0, 80) + '.md';
+					var tags = note.tags && note.tags.length > 0 ? note.tags.map(function(t) { return t.name; }) : [];
+					var md = '---\n';
+					md += 'created: ' + (cDate ? cDate.toISOString() : 'unknown') + '\n';
+					md += 'updated: ' + updatedDate + '\n';
+					if (tags.length > 0) md += 'tags: [' + tags.join(', ') + ']\n';
+					if (note.is_pinned) md += 'pinned: true\n';
+					if (note.is_favorited) md += 'favorited: true\n';
 					md += '---\n\n';
 					md += note.content || '';
 					zip.file(safeName, md);
